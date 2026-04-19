@@ -3,6 +3,8 @@ package com.nedejje.vibe.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -10,6 +12,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.nedejje.vibe.data.DataManager
+import com.nedejje.vibe.ui.navigation.Screen
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,6 +27,14 @@ fun EventDetailScreen(navController: NavController, eventId: String?) {
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { /* Share logic */ }) {
+                        Icon(Icons.Default.Share, contentDescription = "Share")
+                    }
+                    IconButton(onClick = { /* Calendar logic */ }) {
+                        Icon(Icons.Default.CalendarMonth, contentDescription = "Add to Calendar")
                     }
                 }
             )
@@ -53,16 +65,15 @@ fun EventDetailScreen(navController: NavController, eventId: String?) {
                 if (event.isFree) {
                     TicketRow("General Admission", "FREE")
                 } else {
-                    TicketRow("Ordinary", "UGX ${String.format("%,d", event.priceOrdinary)}")
-                    TicketRow("VIP", "UGX ${String.format("%,d", event.priceVIP)}")
-                    TicketRow("VVIP", "UGX ${String.format("%,d", event.priceVVIP)}")
+                    TicketRow("Ordinary", "UGX ${String.format(Locale.getDefault(), "%,d", event.priceOrdinary)}")
+                    TicketRow("VIP", "UGX ${String.format(Locale.getDefault(), "%,d", event.priceVIP)}")
+                    TicketRow("VVIP", "UGX ${String.format(Locale.getDefault(), "%,d", event.priceVVIP)}")
                 }
                 
                 Spacer(modifier = Modifier.weight(1f))
                 Button(
-                    onClick = { /* Booking Logic */ },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = true
+                    onClick = { navController.navigate(Screen.TicketPurchase.createRoute(event.id)) },
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Book Now")
                 }
