@@ -8,7 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
+import com.nedejje.vibe.R
 import com.nedejje.vibe.ui.navigation.Screen
 import kotlinx.coroutines.delay
 
@@ -21,6 +23,10 @@ fun SplashScreen(navController: NavController) {
         }
     }
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "VIBE", style = MaterialTheme.typography.headlineLarge)
+        Text(
+            text = stringResource(id = R.string.app_name).uppercase(),
+            style = MaterialTheme.typography.displayLarge,
+            color = MaterialTheme.colorScheme.primary
+        )
     }
 }

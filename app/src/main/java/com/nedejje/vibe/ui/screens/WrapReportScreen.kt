@@ -1,17 +1,35 @@
 package com.nedejje.vibe.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.nedejje.vibe.R
+import com.nedejje.vibe.data.DataManager
+import com.nedejje.vibe.data.Event
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WrapReportScreen(navController: NavController) {
+fun WrapReportScreen(
+    navController: NavController,
+    eventId: String? = null
+) {
+    val event: Event? = remember(eventId) {
+        eventId?.let { DataManager.events.find { e -> e.id == it } }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -28,21 +46,23 @@ fun WrapReportScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(dimensionResource(R.dimen.padding_medium)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacer_medium))
         ) {
             Text(text = "Summary", style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.height(16.dp))
             
             ReportStat("Total Attendees", "42 / 50")
-            ReportStat("Total Spend", "$1,050.00")
-            ReportStat("Budget Variance", "-$50.00 (Under Budget)")
+            ReportStat("Total Spend", "UGX 1,050,000")
+            ReportStat("Budget Variance", "UGX 50,000 (Under)")
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_medium)))
             Text(text = "Vendor Summary", style = MaterialTheme.typography.titleMedium)
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            Text("Catering: $300.00 - Delivered")
-            Text("Venue: $500.00 - Paid")
-            Text("Decor: $100.00 - Paid")
+            HorizontalDivider()
+            
+            VendorItem("Catering", "UGX 300,000", "Delivered")
+            VendorItem("Venue", "UGX 500,000", "Paid")
+            VendorItem("Decor", "UGX 100,000", "Paid")
             
             Spacer(modifier = Modifier.weight(1f))
             Button(
@@ -62,6 +82,22 @@ fun ReportStat(label: String, value: String) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(text = label, style = MaterialTheme.typography.bodyLarge)
-        Text(text = value, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+        Text(text = value, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
     }
+}
+
+@Composable
+fun VendorItem(name: String, amount: String, status: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(text = name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+            Text(text = status, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
+        }
+        Text(text = amount, style = MaterialTheme.typography.bodyMedium)
+    }
+    HorizontalDivider(thickness = 0.5.dp)
 }

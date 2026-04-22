@@ -1,3 +1,27 @@
 <resources>
     <string name="app_name">Vibe</string>
+    <string name="login_title">Login to Vibe</string>
+    <string name="signup_title">Join Vibe</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Password</string>
+    <string name="full_name_label">Full Name</string>
+    <string name="login_button">Login</string>
+    <string name="signup_button">Sign Up</string>
+    <string name="create_account_button">Create Account</string>
+    <string name="no_account_text">Don\'t have an account? Sign up</string>
+    <string name="already_have_account_text">Already have an account? Login</string>
+    <string name="discovery_title">Vibe Discovery</string>
+    <string name="admin_dashboard_title">Event Manager Dashboard</string>
+    <string name="discover_events_header">Discover Events</string>
+    <string name="organizer_tools_header">Organizer Tools</string>
+    <string name="manage_events_header">Manage Your Events</string>
+    <string name="settings_title">Settings</string>
+    <string name="profile_title">My Profile</string>
+    <string name="team_title">Project Team</string>
+    <string name="logout_button">Logout</string>
+    <string name="book_now_button">Book Now</string>
+    <string name="confirm_booking_button">Confirm Booking</string>
+    <string name="free_badge">FREE</string>
+    <string name="ugx_currency">UGX</string>
+    <string name="starting_from">Starting from %1$s %2$s</string>
 </resources>

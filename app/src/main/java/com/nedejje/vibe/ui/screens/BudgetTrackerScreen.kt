@@ -8,8 +8,11 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.nedejje.vibe.R
+import java.util.Locale
 
 data class BudgetItem(val name: String, val amount: Double)
 
@@ -17,10 +20,10 @@ data class BudgetItem(val name: String, val amount: Double)
 @Composable
 fun BudgetTrackerScreen(navController: NavController) {
     val items = listOf(
-        BudgetItem("Venue Rental", 500.0),
-        BudgetItem("Catering", 300.0),
-        BudgetItem("Decorations", 100.0),
-        BudgetItem("Drinks", 150.0)
+        BudgetItem("Venue Rental", 500000.0),
+        BudgetItem("Catering", 300000.0),
+        BudgetItem("Decorations", 100000.0),
+        BudgetItem("Drinks", 150000.0)
     )
     val total = items.sumOf { it.amount }
 
@@ -40,23 +43,23 @@ fun BudgetTrackerScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
+                .padding(dimensionResource(R.dimen.padding_medium))
         ) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium))) {
                     Text(text = "Total Estimated Spend", style = MaterialTheme.typography.labelMedium)
-                    Text(text = "$${total}", style = MaterialTheme.typography.headlineMedium)
+                    Text(text = "UGX ${formatBudgetUgx(total)}", style = MaterialTheme.typography.headlineMedium)
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_medium)))
             LazyColumn {
                 items(items) { item ->
                     ListItem(
                         headlineContent = { Text(item.name) },
-                        trailingContent = { Text("$${item.amount}") }
+                        trailingContent = { Text("UGX ${formatBudgetUgx(item.amount)}") }
                     )
                     HorizontalDivider()
                 }
@@ -64,3 +67,6 @@ fun BudgetTrackerScreen(navController: NavController) {
         }
     }
 }
+
+private fun formatBudgetUgx(amount: Double): String =
+    String.format(Locale.getDefault(), "%,.0f", amount)

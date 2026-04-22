@@ -6,12 +6,15 @@ data class Event(
     val id: String = UUID.randomUUID().toString(),
     val title: String,
     val date: String,
+    val time: String = "",
     val location: String,
     val description: String = "",
+    val category: String = "OTHER",
     val priceOrdinary: Long = 0,
     val priceVIP: Long = 0,
     val priceVVIP: Long = 0,
-    val isFree: Boolean = false
+    val isFree: Boolean = false,
+    val capacity: Long = 0
 )
 
 enum class UserRole {
