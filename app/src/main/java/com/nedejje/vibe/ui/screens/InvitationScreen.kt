@@ -19,13 +19,16 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.nedejje.vibe.data.DataManager
-import com.nedejje.vibe.data.Event
+import com.nedejje.vibe.VibeApplication
+import com.nedejje.vibe.viewmodel.InvitationViewModel
 
 // ── RSVP state ─────────────────────────────────────────────────────────────────
 
@@ -37,12 +40,19 @@ enum class RsvpStatus { PENDING, ACCEPTED, DECLINED }
 @Composable
 fun InvitationScreen(
     navController: NavController,
-    eventId: String? = null          // drive content from a real event when provided
+    eventId: String?
 ) {
-    // Resolve event — fall back to a default placeholder for design-time preview
-    val event: Event? = remember(eventId) {
-        eventId?.let { DataManager.events.find { e -> e.id == it } }
+    val context = LocalContext.current
+    val app = context.applicationContext as VibeApplication
+    val viewModel: InvitationViewModel = viewModel(
+        factory = InvitationViewModel.Factory(app.container.eventRepository)
+    )
+
+    LaunchedEffect(eventId) {
+        eventId?.let { viewModel.setEventId(it) }
     }
+
+    val event by viewModel.event.collectAsStateWithLifecycle()
 
     // RSVP state
     var rsvpStatus by remember { mutableStateOf(RsvpStatus.PENDING) }
@@ -62,7 +72,6 @@ fun InvitationScreen(
     // Display values — use real event data or placeholder
     val eventTitle    = event?.title       ?: "Annual Team Gala 2025"
     val eventDate     = event?.date        ?: "October 24th"
-    val eventTime     = event?.time        ?: "7:00 PM"
     val eventLocation = event?.location    ?: "Serena Hotel, Kampala"
     val eventDesc     = event?.description ?: "Join us for an unforgettable evening of celebration, great food, and wonderful company. Dress code: Smart Casual."
     val isFree        = event?.isFree      ?: true
@@ -102,7 +111,7 @@ fun InvitationScreen(
                 actions = {
                     // Copy invite details to clipboard
                     IconButton(onClick = {
-                        val text = "You're invited to $eventTitle!\n$eventDate at $eventTime\n$eventLocation"
+                        val text = "You're invited to $eventTitle!\n$eventDate at $eventLocation\n$eventLocation"
                         clipboard.setText(AnnotatedString(text))
                         snackbarMessage = "Invite details copied!"
                     }) {
@@ -110,7 +119,6 @@ fun InvitationScreen(
                     }
                     IconButton(onClick = {
                         snackbarMessage = "Share sheet opened"
-                        // Trigger Android share sheet via Intent in a real implementation
                     }) {
                         Icon(Icons.Default.Share, contentDescription = "Share")
                     }
@@ -213,7 +221,6 @@ fun InvitationScreen(
                     )
 
                     DetailRow(icon = Icons.Default.CalendarToday, label = "Date", value = eventDate)
-                    DetailRow(icon = Icons.Default.Schedule,      label = "Time", value = eventTime)
                     DetailRow(icon = Icons.Default.LocationOn,    label = "Venue", value = eventLocation)
                     DetailRow(
                         icon = Icons.Default.ConfirmationNumber,

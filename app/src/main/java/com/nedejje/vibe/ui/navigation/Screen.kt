@@ -26,22 +26,26 @@ sealed class Screen(val route: String) {
         fun createRoute(eventId: String) = "ticket_purchase/$eventId"
     }
 
-    // ── Invitation — supports optional eventId so it works both as a
-    //    standalone screen and driven by a real event ─────────────────────
+    // ── Event Tools (parameterised) ──────────────────────────────────────
+    object Contribution : Screen("contribution/{eventId}") {
+        fun createRoute(eventId: String) = "contribution/$eventId"
+    }
+    object GuestManager : Screen("guest_manager/{eventId}") {
+        fun createRoute(eventId: String) = "guest_manager/$eventId"
+    }
+    object BudgetTracker : Screen("budget_tracker/{eventId}") {
+        fun createRoute(eventId: String) = "budget_tracker/$eventId"
+    }
+    object WrapReport : Screen("wrap_report/{eventId}") {
+        fun createRoute(eventId: String) = "wrap_report/$eventId"
+    }
+
+    // ── Invitation — supports optional eventId ────────────────────────────
     object Invitation : Screen("invitation?eventId={eventId}") {
         const val routeWithoutParam = "invitation"
         fun createRoute(eventId: String) = "invitation?eventId=$eventId"
     }
 
-    // ── Wrap report — driven by event when eventId is provided ────────────
-    object WrapReport : Screen("wrap_report?eventId={eventId}") {
-        const val routeWithoutParam = "wrap_report"
-        fun createRoute(eventId: String) = "wrap_report?eventId=$eventId"
-    }
-
-    // ── Organiser tools (no params) ────────────────────────────────────────
-    object GuestManager  : Screen("guest_manager")
-    object BudgetTracker : Screen("budget_tracker")
-    object Contribution  : Screen("contribution")
-    object Team          : Screen("team")
+    // ── Other ────────────────────────────────────────────────────────────
+    object Team : Screen("team")
 }

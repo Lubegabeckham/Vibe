@@ -5,30 +5,51 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.nedejje.vibe.R
-import com.nedejje.vibe.data.DataManager
-import com.nedejje.vibe.data.Event
+import com.nedejje.vibe.VibeApplication
+import com.nedejje.vibe.viewmodel.WrapReportViewModel
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WrapReportScreen(
     navController: NavController,
-    eventId: String? = null
+    eventId: String?
 ) {
-    val event: Event? = remember(eventId) {
-        eventId?.let { DataManager.events.find { e -> e.id == it } }
+    val context = LocalContext.current
+    val app = context.applicationContext as VibeApplication
+    val viewModel: WrapReportViewModel = viewModel(
+        factory = WrapReportViewModel.Factory(
+            app.container.eventRepository,
+            app.container.guestRepository,
+            app.container.budgetRepository,
+            app.container.ticketRepository
+        )
+    )
+
+    LaunchedEffect(eventId) {
+        eventId?.let { viewModel.setEventId(it) }
     }
+
+    val event by viewModel.event.collectAsStateWithLifecycle()
+    val guestCount by viewModel.guestCount.collectAsStateWithLifecycle()
+    val checkedInCount by viewModel.checkedInCount.collectAsStateWithLifecycle()
+    val totalSpend by viewModel.totalSpend.collectAsStateWithLifecycle()
+    val ticketRevenue by viewModel.ticketRevenue.collectAsStateWithLifecycle()
+    val budgetItems by viewModel.budgetItems.collectAsStateWithLifecycle()
+
+    val profitOrLoss = ticketRevenue - totalSpend
 
     Scaffold(
         topBar = {
@@ -50,27 +71,79 @@ fun WrapReportScreen(
                 .padding(dimensionResource(R.dimen.padding_medium)),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.spacer_medium))
         ) {
-            Text(text = "Summary", style = MaterialTheme.typography.headlineSmall)
+            event?.let {
+                Text(
+                    text = it.title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Text(text = "Financial Summary", style = MaterialTheme.typography.titleMedium)
             
-            ReportStat("Total Attendees", "42 / 50")
-            ReportStat("Total Spend", "UGX 1,050,000")
-            ReportStat("Budget Variance", "UGX 50,000 (Under)")
-            
-            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_medium)))
-            Text(text = "Vendor Summary", style = MaterialTheme.typography.titleMedium)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (profitOrLoss >= 0) 
+                        MaterialTheme.colorScheme.tertiaryContainer 
+                    else 
+                        MaterialTheme.colorScheme.errorContainer
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = if (profitOrLoss >= 0) "Net Profit" else "Net Loss",
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                    Text(
+                        text = "UGX ${formatAmount(profitOrLoss.toDouble())}",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                StatCard("Revenue", "UGX ${formatAmount(ticketRevenue.toDouble())}", Modifier.weight(1f))
+                StatCard("Expenses", "UGX ${formatAmount(totalSpend)}", Modifier.weight(1f))
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Attendance Summary", style = MaterialTheme.typography.titleMedium)
+            HorizontalDivider()
+            ReportStat("Total Guests", "$guestCount")
+            ReportStat("Checked In", "$checkedInCount")
+            ReportStat("Show-up Rate", "${if (guestCount > 0) (checkedInCount * 100 / guestCount) else 0}%")
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Expense Breakdown", style = MaterialTheme.typography.titleMedium)
             HorizontalDivider()
             
-            VendorItem("Catering", "UGX 300,000", "Delivered")
-            VendorItem("Venue", "UGX 500,000", "Paid")
-            VendorItem("Decor", "UGX 100,000", "Paid")
+            if (budgetItems.isEmpty()) {
+                Text("No expenses recorded", style = MaterialTheme.typography.bodySmall)
+            } else {
+                budgetItems.forEach { item ->
+                    VendorItem(item.name, "UGX ${formatAmount(item.amount)}", "Paid")
+                }
+            }
             
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(32.dp))
             Button(
                 onClick = { navController.popBackStack() },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Close Report")
             }
+        }
+    }
+}
+
+@Composable
+fun StatCard(label: String, value: String, modifier: Modifier = Modifier) {
+    Card(modifier = modifier) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(text = label, style = MaterialTheme.typography.labelSmall)
+            Text(text = value, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -101,3 +174,6 @@ fun VendorItem(name: String, amount: String, status: String) {
     }
     HorizontalDivider(thickness = 0.5.dp)
 }
+
+private fun formatAmount(amount: Double): String =
+    String.format(Locale.getDefault(), "%,.0f", amount)

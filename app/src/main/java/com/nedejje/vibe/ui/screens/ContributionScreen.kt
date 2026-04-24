@@ -11,12 +11,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.nedejje.vibe.R
-import java.util.UUID
+import com.nedejje.vibe.VibeApplication
+import com.nedejje.vibe.db.ContributionEntity
+import com.nedejje.vibe.viewmodel.ContributionViewModel
 
 // ── Model ──────────────────────────────────────────────────────────────────────
 
@@ -29,43 +34,38 @@ enum class ContributionCategory(val label: String, val emoji: String) {
     OTHER("Other", "📦")
 }
 
-data class ContributionItem(
-    val id: String = UUID.randomUUID().toString(),
-    val itemName: String,
-    val category: ContributionCategory = ContributionCategory.OTHER,
-    val personClaimed: String? = null
-)
-
 // ── Screen ─────────────────────────────────────────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ContributionScreen(navController: NavController) {
+fun ContributionScreen(
+    navController: NavController,
+    eventId: String?
+) {
+    val context = LocalContext.current
+    val app = context.applicationContext as VibeApplication
+    val viewModel: ContributionViewModel = viewModel(
+        factory = ContributionViewModel.Factory(app.container.contributionRepository)
+    )
 
-    var items by remember {
-        mutableStateOf(
-            listOf(
-                ContributionItem(itemName = "Plates",       category = ContributionCategory.SUPPLIES,  personClaimed = "John"),
-                ContributionItem(itemName = "Cups",         category = ContributionCategory.SUPPLIES,  personClaimed = null),
-                ContributionItem(itemName = "Soda",         category = ContributionCategory.DRINKS,    personClaimed = "Jane"),
-                ContributionItem(itemName = "Cake",         category = ContributionCategory.DESSERT,   personClaimed = null),
-                ContributionItem(itemName = "Music System", category = ContributionCategory.EQUIPMENT, personClaimed = "Calvin")
-            )
-        )
+    LaunchedEffect(eventId) {
+        eventId?.let { viewModel.setEventId(it) }
     }
 
-    var claimTarget by remember { mutableStateOf<ContributionItem?>(null) }
+    val items by viewModel.contributions.collectAsStateWithLifecycle()
+
+    var claimTarget by remember { mutableStateOf<ContributionEntity?>(null) }
     var claimName by remember { mutableStateOf("") }
     var claimNameError by remember { mutableStateOf(false) }
 
-    var unclaimTarget by remember { mutableStateOf<ContributionItem?>(null) }
+    var unclaimTarget by remember { mutableStateOf<ContributionEntity?>(null) }
 
     var showAddSheet by remember { mutableStateOf(false) }
     var newItemName by remember { mutableStateOf("") }
     var newItemCategory by remember { mutableStateOf(ContributionCategory.OTHER) }
     var newItemNameError by remember { mutableStateOf(false) }
 
-    var deleteTarget by remember { mutableStateOf<ContributionItem?>(null) }
+    var deleteTarget by remember { mutableStateOf<ContributionEntity?>(null) }
 
     val claimed = items.count { it.personClaimed != null }
     val total = items.size
@@ -77,7 +77,7 @@ fun ContributionScreen(navController: NavController) {
     claimTarget?.let { target ->
         AlertDialog(
             onDismissRequest = { claimTarget = null; claimName = ""; claimNameError = false },
-            icon = { Text(target.category.emoji, style = MaterialTheme.typography.headlineMedium) },
+            icon = { Text(ContributionCategory.valueOf(target.category).emoji, style = MaterialTheme.typography.headlineMedium) },
             title = { Text("Claim \"${target.itemName}\"") },
             text = {
                 OutlinedTextField(
@@ -95,9 +95,7 @@ fun ContributionScreen(navController: NavController) {
                     if (claimName.isBlank()) {
                         claimNameError = true
                     } else {
-                        items = items.map {
-                            if (it.id == target.id) it.copy(personClaimed = claimName.trim()) else it
-                        }
+                        viewModel.claimItem(target.id, claimName.trim())
                         claimTarget = null
                         claimName = ""
                     }
@@ -118,7 +116,7 @@ fun ContributionScreen(navController: NavController) {
             text = { Text("Remove ${target.personClaimed}'s claim on \"${target.itemName}\"? It will become available again.") },
             confirmButton = {
                 Button(onClick = {
-                    items = items.map { if (it.id == target.id) it.copy(personClaimed = null) else it }
+                    viewModel.unclaimItem(target.id)
                     unclaimTarget = null
                 }) { Text("Release") }
             },
@@ -136,7 +134,7 @@ fun ContributionScreen(navController: NavController) {
             text = { Text("\"${target.itemName}\" will be removed from the list.") },
             confirmButton = {
                 Button(
-                    onClick = { items = items.filterNot { it.id == target.id }; deleteTarget = null },
+                    onClick = { viewModel.deleteContribution(target); deleteTarget = null },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) { Text("Remove") }
             },
@@ -199,10 +197,11 @@ fun ContributionScreen(navController: NavController) {
                     onClick = {
                         if (newItemName.isBlank()) {
                             newItemNameError = true
-                        } else {
-                            items = items + ContributionItem(
+                        } else if (eventId != null) {
+                            viewModel.addContribution(
+                                eventId = eventId,
                                 itemName = newItemName.trim(),
-                                category = newItemCategory
+                                category = newItemCategory.name
                             )
                             newItemName = ""
                             newItemCategory = ContributionCategory.OTHER
@@ -332,12 +331,13 @@ fun ContributionScreen(navController: NavController) {
 
 @Composable
 private fun ContributionCard(
-    item: ContributionItem,
+    item: ContributionEntity,
     onClaim: () -> Unit,
     onUnclaim: () -> Unit,
     onDelete: () -> Unit
 ) {
     val isClaimed = item.personClaimed != null
+    val category = ContributionCategory.valueOf(item.category)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -354,14 +354,14 @@ private fun ContributionCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = item.category.emoji, style = MaterialTheme.typography.titleLarge)
+                Text(text = category.emoji, style = MaterialTheme.typography.titleLarge)
                 IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
                     Icon(Icons.Default.Close, contentDescription = "Remove", modifier = Modifier.size(16.dp))
                 }
             }
 
             Text(text = item.itemName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            Text(text = item.category.label, style = MaterialTheme.typography.labelSmall)
+            Text(text = category.label, style = MaterialTheme.typography.labelSmall)
 
             if (isClaimed) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {

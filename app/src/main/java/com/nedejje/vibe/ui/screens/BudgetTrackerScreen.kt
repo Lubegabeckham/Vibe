@@ -5,27 +5,82 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.nedejje.vibe.R
+import com.nedejje.vibe.VibeApplication
+import com.nedejje.vibe.db.BudgetItemEntity
+import com.nedejje.vibe.viewmodel.BudgetViewModel
 import java.util.Locale
-
-data class BudgetItem(val name: String, val amount: Double)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BudgetTrackerScreen(navController: NavController) {
-    val items = listOf(
-        BudgetItem("Venue Rental", 500000.0),
-        BudgetItem("Catering", 300000.0),
-        BudgetItem("Decorations", 100000.0),
-        BudgetItem("Drinks", 150000.0)
+fun BudgetTrackerScreen(
+    navController: NavController,
+    eventId: String?
+) {
+    val context = LocalContext.current
+    val app = context.applicationContext as VibeApplication
+    val viewModel: BudgetViewModel = viewModel(
+        factory = BudgetViewModel.Factory(app.container.budgetRepository)
     )
-    val total = items.sumOf { it.amount }
+
+    LaunchedEffect(eventId) {
+        eventId?.let { viewModel.setEventId(it) }
+    }
+
+    val items by viewModel.items.collectAsStateWithLifecycle()
+    val totalSpend by viewModel.totalSpend.collectAsStateWithLifecycle()
+
+    var showAddDialog by remember { mutableStateOf(false) }
+    var newItemName by remember { mutableStateOf("") }
+    var newItemAmount by remember { mutableStateOf("") }
+
+    if (showAddDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddDialog = false },
+            title = { Text("Add Expense") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = newItemName,
+                        onValueChange = { newItemName = it },
+                        label = { Text("Item Name") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = newItemAmount,
+                        onValueChange = { newItemAmount = it.filter { char -> char.isDigit() } },
+                        label = { Text("Amount (UGX)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    if (newItemName.isNotBlank() && newItemAmount.isNotBlank() && eventId != null) {
+                        viewModel.addItem(eventId, newItemName, newItemAmount.toDoubleOrNull() ?: 0.0)
+                        newItemName = ""
+                        newItemAmount = ""
+                        showAddDialog = false
+                    }
+                }) { Text("Add") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -37,6 +92,11 @@ fun BudgetTrackerScreen(navController: NavController) {
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { showAddDialog = true }) {
+                Icon(Icons.Default.Add, contentDescription = "Add Expense")
+            }
         }
     ) { padding ->
         Column(
@@ -51,15 +111,40 @@ fun BudgetTrackerScreen(navController: NavController) {
             ) {
                 Column(modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium))) {
                     Text(text = "Total Estimated Spend", style = MaterialTheme.typography.labelMedium)
-                    Text(text = "UGX ${formatBudgetUgx(total)}", style = MaterialTheme.typography.headlineMedium)
+                    Text(
+                        text = "UGX ${formatBudgetUgx(totalSpend)}",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
+            
             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_medium)))
+            
+            Text(
+                text = "Expenses",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
             LazyColumn {
-                items(items) { item ->
+                items(items, key = { it.id }) { item ->
                     ListItem(
                         headlineContent = { Text(item.name) },
-                        trailingContent = { Text("UGX ${formatBudgetUgx(item.amount)}") }
+                        trailingContent = {
+                            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                Text("UGX ${formatBudgetUgx(item.amount)}")
+                                IconButton(onClick = { viewModel.deleteItem(item) }) {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        tint = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
                     )
                     HorizontalDivider()
                 }

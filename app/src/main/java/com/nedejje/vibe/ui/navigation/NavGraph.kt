@@ -59,13 +59,46 @@ fun NavGraph(
             TicketPurchaseScreen(navController, eventId)
         }
 
-        composable(Screen.GuestManager.route) { GuestManagerScreen(navController) }
-        composable(Screen.BudgetTracker.route) { BudgetTrackerScreen(navController) }
-        composable(Screen.Invitation.route) { InvitationScreen(navController) }
-        composable(Screen.Contribution.route) { ContributionScreen(navController) }
+        // Event Tools (Admin/Organiser)
+        composable(
+            route = Screen.Contribution.route,
+            arguments = listOf(navArgument("eventId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId")
+            ContributionScreen(navController, eventId)
+        }
+
+        composable(
+            route = Screen.GuestManager.route,
+            arguments = listOf(navArgument("eventId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId")
+            GuestManagerScreen(navController, eventId)
+        }
+
+        composable(
+            route = Screen.BudgetTracker.route,
+            arguments = listOf(navArgument("eventId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId")
+            BudgetTrackerScreen(navController, eventId)
+        }
+
+        composable(
+            route = Screen.WrapReport.route,
+            arguments = listOf(navArgument("eventId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId")
+            WrapReportScreen(navController, eventId)
+        }
+
+        composable(Screen.Invitation.route) { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId")
+            InvitationScreen(navController, eventId)
+        }
+
         composable(Screen.Profile.route) { ProfileScreen(navController) }
         composable(Screen.Settings.route) { SettingsScreen(navController) }
-        composable(Screen.WrapReport.route) { WrapReportScreen(navController) }
         composable(Screen.Team.route) { TeamScreen(navController) }
     }
 }
