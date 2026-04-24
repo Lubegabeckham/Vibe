@@ -11,6 +11,7 @@ import com.nedejje.vibe.ui.screens.*
 @Composable
 fun NavGraph(
     navController: NavHostController,
+<<<<<<< HEAD
     startDest: String = Screen.Splash.route,
     onThemeToggle: () -> Unit,
     isDarkMode: Boolean
@@ -35,6 +36,30 @@ fun NavGraph(
         }
 
         // ── Event Editor (Admin) ──────────────────────────────────────────
+=======
+    onThemeToggle: () -> Unit,
+    isDarkMode: Boolean
+) {
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Splash.route
+    ) {
+        composable(Screen.Splash.route) { SplashScreen(navController) }
+        composable(Screen.Login.route) { LoginScreen(navController) }
+        composable(Screen.Signup.route) { SignupScreen(navController) }
+        
+        // User Dashboard
+        composable(Screen.Home.route) { 
+            HomeScreen(navController, onThemeToggle, isDarkMode) 
+        }
+        
+        // Admin Dashboard
+        composable(Screen.AdminHome.route) { 
+            AdminHomeScreen(navController) 
+        }
+        
+        // Event Editor (Admin)
+>>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
         composable(
             route = Screen.EventEditor.route,
             arguments = listOf(navArgument("eventId") { type = NavType.StringType })
@@ -42,8 +67,13 @@ fun NavGraph(
             val eventId = backStackEntry.arguments?.getString("eventId")
             EventEditorScreen(navController, eventId)
         }
+<<<<<<< HEAD
 
         // ── Event Detail (User) ───────────────────────────────────────────
+=======
+        
+        // Event Detail (User)
+>>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
         composable(
             route = Screen.EventDetail.route,
             arguments = listOf(navArgument("eventId") { type = NavType.StringType })
@@ -52,7 +82,11 @@ fun NavGraph(
             EventDetailScreen(navController, eventId)
         }
 
+<<<<<<< HEAD
         // ── Ticket Purchase ───────────────────────────────────────────────
+=======
+        // Ticket Purchase (User)
+>>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
         composable(
             route = Screen.TicketPurchase.route,
             arguments = listOf(navArgument("eventId") { type = NavType.StringType })
@@ -61,7 +95,11 @@ fun NavGraph(
             TicketPurchaseScreen(navController, eventId)
         }
 
+<<<<<<< HEAD
         // ── Event Tools ───────────────────────────────────────────────────
+=======
+        // Event Tools (Admin/Organiser)
+>>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
         composable(
             route = Screen.Contribution.route,
             arguments = listOf(navArgument("eventId") { type = NavType.StringType })
@@ -94,16 +132,25 @@ fun NavGraph(
             WrapReportScreen(navController, eventId)
         }
 
+<<<<<<< HEAD
         composable(
             route = Screen.Invitation.route,
             arguments = listOf(navArgument("eventId") {
                 type = NavType.StringType; nullable = true; defaultValue = null
             })
         ) { backStackEntry ->
+=======
+        composable(Screen.Invitation.route) { backStackEntry ->
+>>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
             val eventId = backStackEntry.arguments?.getString("eventId")
             InvitationScreen(navController, eventId)
         }
 
+<<<<<<< HEAD
+=======
+        composable(Screen.Profile.route) { ProfileScreen(navController) }
+        composable(Screen.Settings.route) { SettingsScreen(navController) }
+>>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
         composable(Screen.Team.route) { TeamScreen(navController) }
     }
 }
