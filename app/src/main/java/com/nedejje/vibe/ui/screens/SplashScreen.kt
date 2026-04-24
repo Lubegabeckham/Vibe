@@ -1,6 +1,5 @@
 package com.nedejje.vibe.ui.screens
 
-<<<<<<< HEAD
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -34,31 +33,10 @@ fun SplashScreen(navController: NavController) {
         delay(500)
         subVisible = true
         delay(1800)
-=======
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
-import com.nedejje.vibe.R
-import com.nedejje.vibe.ui.navigation.Screen
-import kotlinx.coroutines.delay
-
-@Composable
-fun SplashScreen(navController: NavController) {
-    LaunchedEffect(key1 = true) {
-        delay(2000L)
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
         navController.navigate(Screen.Login.route) {
             popUpTo(Screen.Splash.route) { inclusive = true }
         }
     }
-<<<<<<< HEAD
 
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val glowAlpha by infiniteTransition.animateFloat(
@@ -125,13 +103,5 @@ fun SplashScreen(navController: NavController) {
                     color = Color.White.copy(alpha = 0.3f), letterSpacing = 0.5.sp)
             }
         }
-=======
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(
-            text = stringResource(id = R.string.app_name).uppercase(),
-            style = MaterialTheme.typography.displayLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
     }
 }

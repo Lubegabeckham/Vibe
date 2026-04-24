@@ -4,10 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-<<<<<<< HEAD
 import androidx.room.migration.Migration
-=======
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,11 +20,7 @@ import java.util.UUID
         ContributionEntity::class,
         BudgetItemEntity::class
     ],
-<<<<<<< HEAD
     version = 2,
-=======
-    version = 1,
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
     exportSchema = false
 )
 abstract class VibeDatabase : RoomDatabase() {
@@ -40,7 +33,6 @@ abstract class VibeDatabase : RoomDatabase() {
     abstract fun budgetDao(): BudgetDao
 
     companion object {
-<<<<<<< HEAD
         @Volatile private var INSTANCE: VibeDatabase? = null
 
         // Migration: v1 → v2 adds passwordHash column
@@ -49,10 +41,6 @@ abstract class VibeDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE users ADD COLUMN passwordHash TEXT NOT NULL DEFAULT ''")
             }
         }
-=======
-        @Volatile
-        private var INSTANCE: VibeDatabase? = null
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
 
         fun getInstance(context: Context): VibeDatabase {
             return INSTANCE ?: synchronized(this) {
@@ -61,21 +49,12 @@ abstract class VibeDatabase : RoomDatabase() {
                     VibeDatabase::class.java,
                     "vibe_database"
                 )
-<<<<<<< HEAD
                     .addMigrations(MIGRATION_1_2)
-=======
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
                     .addCallback(object : Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             super.onCreate(db)
                             INSTANCE?.let { database ->
-<<<<<<< HEAD
                                 CoroutineScope(Dispatchers.IO).launch { seedDatabase(database) }
-=======
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    seedDatabase(database)
-                                }
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
                             }
                         }
                     })
@@ -87,7 +66,6 @@ abstract class VibeDatabase : RoomDatabase() {
 
         private suspend fun seedDatabase(db: VibeDatabase) {
             val adminId = UUID.randomUUID().toString()
-<<<<<<< HEAD
             val userId  = UUID.randomUUID().toString()
             val event1  = UUID.randomUUID().toString()
             val event2  = UUID.randomUUID().toString()
@@ -124,49 +102,6 @@ abstract class VibeDatabase : RoomDatabase() {
                     isFree = true, priceOrdinary = 0, priceVIP = 0, priceVVIP = 0
                 )
             ))
-=======
-            val event1Id = UUID.randomUUID().toString()
-            val event2Id = UUID.randomUUID().toString()
-
-            // Seed admin user
-            db.userDao().insert(
-                UserEntity(
-                    id = adminId,
-                    name = "Admin",
-                    email = "admin@vibe.ug",
-                    phone = "+256700000000",
-                    isAdmin = true
-                )
-            )
-
-            // Seed sample events
-            db.eventDao().insertAll(
-                listOf(
-                    EventEntity(
-                        id = event1Id,
-                        title = "Kampala Jazz Night",
-                        location = "Serena Hotel, Kampala",
-                        date = "Sat, 14 Jun 2025 · 7:00 PM",
-                        description = "An unforgettable evening of live jazz featuring top local and international artists.",
-                        isFree = false,
-                        priceOrdinary = 50_000,
-                        priceVIP = 150_000,
-                        priceVVIP = 300_000
-                    ),
-                    EventEntity(
-                        id = event2Id,
-                        title = "Ugandan Startup Expo",
-                        location = "Kampala Innovation Hub",
-                        date = "Sun, 22 Jun 2025 · 10:00 AM",
-                        description = "Meet the next generation of Ugandan entrepreneurs and innovators. Free and open to all.",
-                        isFree = true,
-                        priceOrdinary = 0,
-                        priceVIP = 0,
-                        priceVVIP = 0
-                    )
-                )
-            )
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
         }
     }
 }

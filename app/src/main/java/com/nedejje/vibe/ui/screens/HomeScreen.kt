@@ -1,17 +1,11 @@
 package com.nedejje.vibe.ui.screens
 
-<<<<<<< HEAD
 import androidx.compose.animation.*
-=======
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-<<<<<<< HEAD
 import androidx.compose.foundation.lazy.LazyRow
-=======
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-<<<<<<< HEAD
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -39,18 +32,6 @@ import com.nedejje.vibe.db.EventEntity
 import com.nedejje.vibe.session.SessionManager
 import com.nedejje.vibe.ui.navigation.Screen
 import com.nedejje.vibe.viewmodel.HomeViewModel
-=======
-import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.nedejje.vibe.R
-import com.nedejje.vibe.data.DataManager
-import com.nedejje.vibe.data.Event
-import com.nedejje.vibe.ui.navigation.Screen
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,7 +41,6 @@ fun HomeScreen(
     onThemeToggle: () -> Unit,
     isDarkMode: Boolean
 ) {
-<<<<<<< HEAD
     val context = LocalContext.current
     val app = context.applicationContext as VibeApplication
     val viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory(app.container.eventRepository))
@@ -80,15 +60,10 @@ fun HomeScreen(
         "Tech"  -> events.filter { it.title.contains("Tech", true) || it.title.contains("Startup", true) || it.title.contains("Innovation", true) }
         else    -> events
     }
-=======
-    var showMenu by remember { mutableStateOf(false) }
-    val events = DataManager.events
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
 
     Scaffold(
         topBar = {
             TopAppBar(
-<<<<<<< HEAD
                 title = {
                     Column {
                         Text(
@@ -103,9 +78,6 @@ fun HomeScreen(
                         )
                     }
                 },
-=======
-                title = { Text(stringResource(R.string.discovery_title)) },
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
                 actions = {
                     IconButton(onClick = onThemeToggle) {
                         Icon(
@@ -115,7 +87,6 @@ fun HomeScreen(
                     }
                     Box {
                         IconButton(onClick = { showMenu = !showMenu }) {
-<<<<<<< HEAD
                             Icon(Icons.Default.MoreVert, contentDescription = "Menu")
                         }
                         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
@@ -137,64 +108,26 @@ fun HomeScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
                 )
-=======
-                            Icon(Icons.Default.MoreVert, contentDescription = "Quick Access")
-                        }
-                        DropdownMenu(
-                            expanded = showMenu,
-                            onDismissRequest = { showMenu = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.admin_dashboard_title)) },
-                                leadingIcon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                                onClick = {
-                                    showMenu = false
-                                    navController.navigate(Screen.AdminHome.route)
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.settings_title)) },
-                                leadingIcon = { Icon(Icons.Default.Build, contentDescription = null) },
-                                onClick = {
-                                    showMenu = false
-                                    navController.navigate(Screen.Settings.route)
-                                }
-                            )
-                        }
-                    }
-                }
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
             )
         },
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
                     selected = true,
-<<<<<<< HEAD
                     onClick = {},
                     icon = { Icon(Icons.Default.Home, "Home") },
                     label = { Text("Discover") }
-=======
-                    onClick = { /* already home */ },
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home") }
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { navController.navigate(Screen.Profile.route) },
-<<<<<<< HEAD
                     icon = { Icon(Icons.Default.Person, "Profile") },
-=======
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
                     label = { Text("Profile") }
                 )
             }
         }
     ) { padding ->
         LazyColumn(
-<<<<<<< HEAD
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
@@ -279,34 +212,12 @@ fun HomeScreen(
                     navController.navigate(Screen.EventDetail.createRoute(event.id))
                 })
                 Spacer(Modifier.height(4.dp))
-=======
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(dimensionResource(R.dimen.padding_medium))
-        ) {
-            item {
-                Text(
-                    text = stringResource(R.string.discover_events_header),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_medium)))
-            }
-            items(events) { event ->
-                UserEventCard(event) {
-                    navController.navigate(Screen.EventDetail.createRoute(event.id))
-                }
-                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_small)))
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
             }
         }
     }
 }
 
 @Composable
-<<<<<<< HEAD
 fun UserEventCard(event: EventEntity, onClick: () -> Unit) {
     Card(
         modifier = Modifier
@@ -338,39 +249,12 @@ fun UserEventCard(event: EventEntity, onClick: () -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Top
                 ) {
-=======
-fun UserEventCard(event: Event, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(R.dimen.card_elevation)),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Column {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp)
-                    .background(
-                        brush = if (event.isFree) {
-                            Brush.horizontalGradient(listOf(MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.tertiary))
-                        } else {
-                            Brush.horizontalGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer))
-                        }
-                    )
-            )
-            Column(modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium))) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
                     Text(
                         text = event.title,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-<<<<<<< HEAD
                         modifier = Modifier.weight(1f).padding(end = 8.dp)
                     )
                     if (event.isFree) {
@@ -381,23 +265,10 @@ fun UserEventCard(event: Event, onClick: () -> Unit) {
                                 fontWeight = FontWeight.ExtraBold,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-=======
-                        modifier = Modifier.weight(1f)
-                    )
-                    if (event.isFree) {
-                        Surface(shape = RoundedCornerShape(6.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
-                            Text(
-                                text = stringResource(R.string.free_badge),
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
                             )
                         }
                     }
                 }
-<<<<<<< HEAD
 
                 Spacer(Modifier.height(10.dp))
 
@@ -427,44 +298,17 @@ fun UserEventCard(event: Event, onClick: () -> Unit) {
                             Text("From", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
                                 "UGX ${String.format(Locale.getDefault(), "%,d", event.priceOrdinary)}",
-=======
-                Spacer(modifier = Modifier.height(10.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = event.date, style = MaterialTheme.typography.bodySmall)
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = event.location, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-                if (!event.isFree) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    HorizontalDivider()
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Column {
-                            Text(text = "From", style = MaterialTheme.typography.labelSmall)
-                            Text(
-                                text = "UGX ${String.format(Locale.getDefault(), "%,d", event.priceOrdinary)}",
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
                             )
                         }
                         Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer) {
-<<<<<<< HEAD
                             Icon(
                                 Icons.AutoMirrored.Filled.ArrowForward, null,
                                 Modifier.padding(8.dp).size(16.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
-=======
-                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.padding(8.dp).size(16.dp))
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
                         }
                     }
                 }

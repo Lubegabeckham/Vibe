@@ -2,27 +2,15 @@ package com.nedejje.vibe.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
-<<<<<<< HEAD
-import androidx.compose.ui.text.font.Font
-=======
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-<<<<<<< HEAD
 // Syne — geometric display font for headlines (distinctive & modern)
 // Nunito — rounded, warm body font for readability
 // We use downloadable Google Fonts via Compose's font provider mechanism.
 // Since we can't declare font files here, we reference system serif + sans as
 // graceful fallbacks, but in the project you would add the font XML resources.
-
-// To use Google Fonts, add this to build.gradle:
-//   implementation("androidx.compose.ui:ui-text-google-fonts:1.7.0")
-// Then replace FontFamily.Serif/SansSerif below with:
-//   val provider = GoogleFont.Provider("fonts.gstatic.com", ...)
-//   val SyneFont = FontFamily(Font(GoogleFont("Syne"), provider, FontWeight.Bold))
-//   val NunitoFont = FontFamily(Font(GoogleFont("Nunito"), provider))
 
 val DisplayFontFamily = FontFamily.Serif     // Replace with Syne via Google Fonts
 val BodyFontFamily    = FontFamily.SansSerif // Replace with Nunito via Google Fonts
@@ -124,44 +112,5 @@ val Typography = Typography(
         fontSize = 11.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp
-=======
-val Typography = Typography(
-    displayLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Bold,
-        fontSize = 32.sp
-    ),
-    headlineLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Bold,
-        fontSize = 28.sp
-    ),
-    headlineMedium = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Bold,
-        fontSize = 24.sp
-    ),
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 20.sp
-    ),
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    ),
-    bodyMedium = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp
-    ),
-    labelLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 14.sp
->>>>>>> 9dbc67af9349f791959aa207369fc9c3a9587faa
     )
 )
