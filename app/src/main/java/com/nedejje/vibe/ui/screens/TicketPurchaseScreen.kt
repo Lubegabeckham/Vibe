@@ -13,12 +13,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.nedejje.vibe.data.DataManager
-import com.nedejje.vibe.data.Event
+import com.nedejje.vibe.VibeApplication
+import com.nedejje.vibe.db.EventEntity
+import com.nedejje.vibe.session.SessionManager
 import com.nedejje.vibe.ui.navigation.Screen
+import com.nedejje.vibe.viewmodel.TicketViewModel
 import java.util.Locale
 
 // ── Ticket tier model ──────────────────────────────────────────────────────────
@@ -31,7 +38,7 @@ data class TicketTier(
     val isFree: Boolean = false
 )
 
-private fun Event.tiers(): List<TicketTier> = if (isFree) {
+private fun EventEntity.tiers(): List<TicketTier> = if (isFree) {
     listOf(TicketTier("free", "Free Entry", "General admission, no charge", 0L, isFree = true))
 } else {
     buildList {
@@ -50,7 +57,17 @@ private fun formatPrice(amount: Long) = String.format(Locale.getDefault(), "%,d"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
-    val event = remember(eventId) { DataManager.getEventById(eventId ?: "") }
+    val context = LocalContext.current
+    val app = context.applicationContext as VibeApplication
+    val viewModel: TicketViewModel = viewModel(
+        factory = TicketViewModel.Factory(app.container.ticketRepository, app.container.eventRepository)
+    )
+
+    LaunchedEffect(eventId) {
+        eventId?.let { viewModel.loadEvent(it) }
+    }
+
+    val event by viewModel.event.collectAsStateWithLifecycle()
 
     // ── State ──────────────────────────────────────────────────────────────
     val tiers = remember(event) { event?.tiers() ?: emptyList() }
@@ -72,7 +89,7 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
             title = { Text("Confirm Booking") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(event.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    Text(event!!.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                     HorizontalDivider()
                     ConfirmRow("Tier",     selectedTier.label)
                     ConfirmRow("Quantity", "$quantity ticket${if (quantity > 1) "s" else ""}")
@@ -84,8 +101,17 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
             },
             confirmButton = {
                 Button(onClick = {
-                    bookingConfirmed = true
-                    showConfirmDialog = false
+                    viewModel.purchase(
+                        eventId = event!!.id,
+                        userId = SessionManager.userId,
+                        tier = selectedTier.label,
+                        price = unitPrice,
+                        quantity = quantity,
+                        onDone = {
+                            bookingConfirmed = true
+                            showConfirmDialog = false
+                        }
+                    )
                 }) { Text("Pay & Book") }
             },
             dismissButton = {
@@ -122,6 +148,7 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
                 Text(
                     "Your $quantity ${selectedTier?.label ?: ""} ticket${if (quantity > 1) "s" else ""} for\n${event?.title ?: ""} ${if ((selectedTier?.isFree == true)) "are reserved" else "have been paid for"}.",
                     style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 if (selectedTier?.isFree == false) {
@@ -211,23 +238,23 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
 
                 // ── Event header ───────────────────────────────────────────
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(event.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Text(event!!.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (event.date.isNotBlank()) {
+                        if (event!!.date.isNotBlank()) {
                             Icon(Icons.Default.CalendarToday, contentDescription = null,
                                 modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(event.date, style = MaterialTheme.typography.bodySmall,
+                            Text(event!!.date, style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        if (event.location.isNotBlank()) {
+                        if (event!!.location.isNotBlank()) {
                             Text("·", style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Icon(Icons.Default.LocationOn, contentDescription = null,
                                 modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(event.location, style = MaterialTheme.typography.bodySmall,
+                            Text(event!!.location, style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
