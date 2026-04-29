@@ -14,6 +14,7 @@ sealed class Screen(val route: String) {
 
     // ── Admin ──────────────────────────────────────────────────────────────
     object AdminHome : Screen("admin_home")
+    object QrScanner : Screen("qr_scanner")
 
     // ── Event (parameterised) ──────────────────────────────────────────────
     object EventEditor : Screen("event_editor/{eventId}") {
@@ -24,6 +25,9 @@ sealed class Screen(val route: String) {
     }
     object TicketPurchase : Screen("ticket_purchase/{eventId}") {
         fun createRoute(eventId: String) = "ticket_purchase/$eventId"
+    }
+    object TicketView : Screen("ticket_view/{ticketId}") {
+        fun createRoute(ticketId: String) = "ticket_view/$ticketId"
     }
 
     // ── Event Tools (parameterised) ──────────────────────────────────────

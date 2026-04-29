@@ -1,5 +1,7 @@
 package com.nedejje.vibe.ui.screens
 
+import android.content.Intent
+import android.provider.CalendarContract
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -11,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,7 +41,11 @@ fun EventDetailScreen(navController: NavController, eventId: String?) {
     val context = LocalContext.current
     val app = context.applicationContext as VibeApplication
     val viewModel: EventDetailViewModel = viewModel(
-        factory = EventDetailViewModel.Factory(app.container.eventRepository, app.container.ticketRepository)
+        factory = EventDetailViewModel.Factory(
+            app.container.eventRepository, 
+            app.container.ticketRepository,
+            app.container.favoriteRepository
+        )
     )
 
     LaunchedEffect(eventId) { eventId?.let { viewModel.load(it) } }
@@ -46,6 +53,7 @@ fun EventDetailScreen(navController: NavController, eventId: String?) {
     val event       by viewModel.event.collectAsStateWithLifecycle()
     val ticketCount by viewModel.ticketCount.collectAsStateWithLifecycle()
     val revenue     by viewModel.revenue.collectAsStateWithLifecycle()
+    val isFavorite  by viewModel.isFavorite.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -57,8 +65,37 @@ fun EventDetailScreen(navController: NavController, eventId: String?) {
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO Share */ }) { Icon(Icons.Default.Share, "Share") }
-                    IconButton(onClick = { /* TODO Calendar */ }) { Icon(Icons.Default.CalendarMonth, "Add to calendar") }
+                    IconButton(onClick = { viewModel.toggleFavorite() }) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                            contentDescription = "Favorite",
+                            tint = if (isFavorite) Color.Red else LocalContentColor.current
+                        )
+                    }
+                    IconButton(onClick = { 
+                        event?.let { e ->
+                            val intent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_TEXT, "Check out this event on Vibe: ${e.title} at ${e.location} on ${e.date}")
+                            }
+                            context.startActivity(Intent.createChooser(intent, "Share Event"))
+                        }
+                    }) { Icon(Icons.Default.Share, "Share") }
+                    
+                    IconButton(onClick = { 
+                        event?.let { e ->
+                            val intent = Intent(Intent.ACTION_INSERT).apply {
+                                data = CalendarContract.Events.CONTENT_URI
+                                putExtra(CalendarContract.Events.TITLE, e.title)
+                                putExtra(CalendarContract.Events.EVENT_LOCATION, e.location)
+                                putExtra(CalendarContract.Events.DESCRIPTION, e.description)
+                                // Standard dates are harder to parse without a proper format, 
+                                // but this opens the dialog
+                                putExtra(CalendarContract.EXTRA_EVENT_ALL_DAY, true)
+                            }
+                            context.startActivity(intent)
+                        }
+                    }) { Icon(Icons.Default.CalendarMonth, "Add to calendar") }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )

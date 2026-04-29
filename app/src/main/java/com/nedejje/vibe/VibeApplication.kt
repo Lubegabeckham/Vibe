@@ -5,9 +5,7 @@ import com.nedejje.vibe.db.VibeDatabase
 import com.nedejje.vibe.repository.*
 import com.nedejje.vibe.session.SessionManager
 
-// ---------------------------------------------------------------------------
-// AppContainer — manual DI; swap for Hilt/Koin when the project grows
-// ---------------------------------------------------------------------------
+
 class AppContainer(application: Application) {
     private val db = VibeDatabase.getInstance(application)
 
@@ -17,6 +15,7 @@ class AppContainer(application: Application) {
     val ticketRepository       = TicketRepository(db.ticketDao())
     val contributionRepository = ContributionRepository(db.contributionDao())
     val budgetRepository       = BudgetRepository(db.budgetDao())
+    val favoriteRepository     = FavoriteRepository(db.favoriteDao())
 }
 
 // ---------------------------------------------------------------------------

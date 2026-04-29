@@ -1,6 +1,7 @@
 package com.nedejje.vibe.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,12 +17,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.nedejje.vibe.VibeApplication
 import com.nedejje.vibe.session.SessionManager
 import com.nedejje.vibe.ui.navigation.Screen
+import com.nedejje.vibe.viewmodel.TicketViewModel
+import kotlinx.coroutines.launch
+import java.util.Locale
 
 enum class BookingStatus(val label: String) {
     UPCOMING("Upcoming"),
@@ -41,8 +49,21 @@ data class BookingRecord(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(navController: NavController) {
+    val context = LocalContext.current
+    val app = context.applicationContext as VibeApplication
+    val ticketViewModel: TicketViewModel = viewModel(
+        factory = TicketViewModel.Factory(app.container.ticketRepository, app.container.eventRepository)
+    )
+    val scope = rememberCoroutineScope()
 
     val currentUser by SessionManager.currentUser.collectAsState()
+    
+    // Load real tickets from DB
+    LaunchedEffect(currentUser) {
+        currentUser?.let { ticketViewModel.loadForUser(it.id) }
+    }
+
+    val realTickets by ticketViewModel.tickets.collectAsStateWithLifecycle()
 
     var displayName by remember(currentUser) { mutableStateOf(currentUser?.name  ?: "") }
     var email       by remember(currentUser) { mutableStateOf(currentUser?.email ?: "") }
@@ -52,22 +73,24 @@ fun ProfileScreen(navController: NavController) {
         displayName.split(" ").mapNotNull { it.firstOrNull()?.uppercaseChar() }.take(2).joinToString("")
     }
 
-    val bookings = remember {
-        mutableStateListOf(
-            BookingRecord("1", "Nyege Nyege Festival",  "Sept 4, 2025",  "VIP",      BookingStatus.UPCOMING,  150_000L),
-            BookingRecord("2", "Blankets and Wine",     "Oct 15, 2025",  "Ordinary", BookingStatus.UPCOMING,   50_000L),
-            BookingRecord("3", "Rooftop Jazz Night",    "Aug 2, 2025",   "Ordinary", BookingStatus.ATTENDED,   30_000L),
-            BookingRecord("4", "Comedy Nite Kampala",   "Jul 20, 2025",  "VIP",      BookingStatus.ATTENDED,   80_000L),
-            BookingRecord("5", "Pearl of Africa Run",   "Jun 5, 2025",   "Ordinary", BookingStatus.CANCELLED,  0L)
+    // Map DB tickets to UI BookingRecords
+    val displayBookings = realTickets.map { t ->
+        BookingRecord(
+            id = t.id,
+            eventName = "Event Ticket", 
+            date = "Purchased on ${java.text.SimpleDateFormat("MMM dd", Locale.getDefault()).format(java.util.Date(t.purchasedAt))}",
+            tier = t.tier,
+            status = if (t.isCancelled) BookingStatus.CANCELLED else if (t.isUsed) BookingStatus.ATTENDED else BookingStatus.UPCOMING,
+            amountPaid = t.price * t.quantity
         )
     }
 
-    val upcomingCount = bookings.count { it.status == BookingStatus.UPCOMING }
-    val attendedCount = bookings.count { it.status == BookingStatus.ATTENDED }
-    val totalSpent    = bookings.filter { it.status != BookingStatus.CANCELLED }.sumOf { it.amountPaid }
+    val upcomingCount = displayBookings.count { it.status == BookingStatus.UPCOMING }
+    val attendedCount = displayBookings.count { it.status == BookingStatus.ATTENDED }
+    val totalSpent    = displayBookings.filter { it.status != BookingStatus.CANCELLED }.sumOf { it.amountPaid }
 
     var activeFilter     by remember { mutableStateOf<BookingStatus?>(null) }
-    val filteredBookings = if (activeFilter == null) bookings else bookings.filter { it.status == activeFilter }
+    val filteredBookings = if (activeFilter == null) displayBookings else displayBookings.filter { it.status == activeFilter }
 
     // Edit sheet
     var showEditSheet by remember { mutableStateOf(false) }
@@ -109,7 +132,6 @@ fun ProfileScreen(navController: NavController) {
                         displayName = editName.trim()
                         email = editEmail.trim()
                         phone = editPhone.trim()
-                        // Persist to session
                         SessionManager.updateProfile(displayName, email, phone)
                         showEditSheet = false
                     },
@@ -119,7 +141,6 @@ fun ProfileScreen(navController: NavController) {
         }
     }
 
-    // Logout dialog
     var showLogoutDialog by remember { mutableStateOf(false) }
     if (showLogoutDialog) {
         AlertDialog(
@@ -162,7 +183,6 @@ fun ProfileScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize().padding(padding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Avatar hero
             item {
                 Box(
                     modifier = Modifier
@@ -176,7 +196,6 @@ fun ProfileScreen(navController: NavController) {
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        // Avatar circle
                         Surface(
                             modifier = Modifier.size(88.dp),
                             shape = CircleShape,
@@ -193,7 +212,6 @@ fun ProfileScreen(navController: NavController) {
                         if (phone.isNotBlank()) {
                             Text(phone, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        // Admin badge
                         if (currentUser?.isAdmin == true) {
                             Spacer(Modifier.height(6.dp))
                             Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
@@ -217,7 +235,6 @@ fun ProfileScreen(navController: NavController) {
                 }
             }
 
-            // Stats
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -227,14 +244,13 @@ fun ProfileScreen(navController: NavController) {
                     ProfileStatCard("Attended",  "$attendedCount", Icons.Default.CheckCircle,    Modifier.weight(1f))
                     ProfileStatCard(
                         "Spent",
-                        if (totalSpent >= 1_000_000) "${"%.1f".format(totalSpent / 1_000_000.0)}M" else "${totalSpent / 1_000}K",
+                        "UGX ${String.format(Locale.getDefault(), "%,d", totalSpent)}",
                         Icons.Default.AccountBalanceWallet, Modifier.weight(1f)
                     )
                 }
                 Spacer(Modifier.height(24.dp))
             }
 
-            // Bookings header + filter
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -276,7 +292,17 @@ fun ProfileScreen(navController: NavController) {
             }
 
             items(filteredBookings, key = { it.id }) { booking ->
-                BookingHistoryItem(booking, Modifier.padding(horizontal = 16.dp))
+                BookingHistoryItem(
+                    booking = booking,
+                    onClick = { navController.navigate(Screen.TicketView.createRoute(booking.id)) },
+                    onCancel = {
+                        scope.launch {
+                            app.container.ticketRepository.cancelTicket(booking.id, true)
+                            ticketViewModel.loadForUser(currentUser?.id ?: "")
+                        }
+                    },
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
                 Spacer(Modifier.height(8.dp))
             }
 
@@ -307,21 +333,29 @@ private fun ProfileStatCard(label: String, value: String, icon: ImageVector, mod
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Icon(icon, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
-            Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(value, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
 
 @Composable
-fun BookingHistoryItem(booking: BookingRecord, modifier: Modifier = Modifier) {
+fun BookingHistoryItem(
+    booking: BookingRecord, 
+    onClick: () -> Unit, 
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val (badgeContainer, badgeContent) = when (booking.status) {
         BookingStatus.UPCOMING  -> MaterialTheme.colorScheme.primaryContainer  to MaterialTheme.colorScheme.primary
         BookingStatus.ATTENDED  -> MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.tertiary
-        BookingStatus.CANCELLED -> MaterialTheme.colorScheme.surfaceVariant    to MaterialTheme.colorScheme.onSurfaceVariant
+        BookingStatus.CANCELLED -> MaterialTheme.colorScheme.errorContainer    to MaterialTheme.colorScheme.error
     }
-    Card(modifier = modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+    Card(
+        modifier = modifier.fillMaxWidth().clickable { onClick() },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -331,7 +365,7 @@ fun BookingHistoryItem(booking: BookingRecord, modifier: Modifier = Modifier) {
                 Text(booking.eventName, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
                 Text(booking.date, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (booking.amountPaid > 0) {
-                    Text("UGX ${booking.amountPaid / 1_000}K", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("UGX ${String.format(Locale.getDefault(), "%,d", booking.amountPaid)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -339,9 +373,16 @@ fun BookingHistoryItem(booking: BookingRecord, modifier: Modifier = Modifier) {
                     Text(booking.tier, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                         style = MaterialTheme.typography.labelSmall, color = badgeContent, fontWeight = FontWeight.SemiBold)
                 }
-                Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.surface) {
-                    Text(booking.status.label, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                        style = MaterialTheme.typography.labelSmall, color = badgeContent)
+                
+                if (booking.status == BookingStatus.UPCOMING) {
+                    TextButton(onClick = { onCancel() }, contentPadding = PaddingValues(0.dp)) {
+                        Text("Cancel", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                    }
+                } else {
+                    Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.surface) {
+                        Text(booking.status.label, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                            style = MaterialTheme.typography.labelSmall, color = badgeContent)
+                    }
                 }
             }
         }

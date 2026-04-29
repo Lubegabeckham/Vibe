@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,7 +44,9 @@ fun HomeScreen(
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as VibeApplication
-    val viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory(app.container.eventRepository))
+    val viewModel: HomeViewModel = viewModel(
+        factory = HomeViewModel.Factory(app.container.eventRepository, app.container.favoriteRepository)
+    )
 
     val events by viewModel.events.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
@@ -51,10 +54,13 @@ fun HomeScreen(
     var showMenu by remember { mutableStateOf(false) }
 
     // Category filter
-    val categories = listOf("All", "Free", "Music", "Sports", "Food", "Tech")
+    val categories = listOf("All", "Favorites", "Free", "Music", "Tech")
     var selectedCategory by remember { mutableStateOf("All") }
 
+    val favorites by app.container.favoriteRepository.observeFavorites(SessionManager.userId).collectAsState(initial = emptyList())
+
     val filteredEvents = when (selectedCategory) {
+        "Favorites" -> events.filter { it.id in favorites }
         "Free"  -> events.filter { it.isFree }
         "Music" -> events.filter { it.title.contains("Jazz", true) || it.title.contains("Music", true) || it.title.contains("Concert", true) }
         "Tech"  -> events.filter { it.title.contains("Tech", true) || it.title.contains("Startup", true) || it.title.contains("Innovation", true) }
@@ -164,6 +170,8 @@ fun HomeScreen(
                             label = { Text(cat) },
                             leadingIcon = if (selectedCategory == cat) {
                                 { Icon(Icons.Default.Check, null, Modifier.size(16.dp)) }
+                            } else if (cat == "Favorites") {
+                                { Icon(Icons.Default.Favorite, null, Modifier.size(16.dp), tint = Color.Red) }
                             } else null
                         )
                     }
@@ -208,9 +216,14 @@ fun HomeScreen(
 
             // Events list
             items(filteredEvents, key = { it.id }) { event ->
-                UserEventCard(event = event, onClick = {
-                    navController.navigate(Screen.EventDetail.createRoute(event.id))
-                })
+                UserEventCard(
+                    event = event,
+                    isFavorite = event.id in favorites,
+                    onFavoriteToggle = { viewModel.toggleFavorite(event.id, it) },
+                    onClick = {
+                        navController.navigate(Screen.EventDetail.createRoute(event.id))
+                    }
+                )
                 Spacer(Modifier.height(4.dp))
             }
         }
@@ -218,7 +231,12 @@ fun HomeScreen(
 }
 
 @Composable
-fun UserEventCard(event: EventEntity, onClick: () -> Unit) {
+fun UserEventCard(
+    event: EventEntity,
+    isFavorite: Boolean,
+    onFavoriteToggle: (Boolean) -> Unit,
+    onClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -257,16 +275,17 @@ fun UserEventCard(event: EventEntity, onClick: () -> Unit) {
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f).padding(end = 8.dp)
                     )
-                    if (event.isFree) {
-                        Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
-                            Text(
-                                "FREE",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                        }
+                    
+                    IconButton(
+                        onClick = { onFavoriteToggle(!isFavorite) },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                            contentDescription = "Favorite",
+                            tint = if (isFavorite) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 }
 
@@ -310,6 +329,17 @@ fun UserEventCard(event: EventEntity, onClick: () -> Unit) {
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
+                    }
+                } else {
+                    Spacer(Modifier.height(12.dp))
+                    Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
+                        Text(
+                            "FREE ENTRY",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        )
                     }
                 }
             }

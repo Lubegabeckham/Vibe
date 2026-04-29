@@ -41,12 +41,15 @@ fun EventEditorScreen(navController: NavController, eventId: String?) {
     var location     by remember { mutableStateOf("") }
     var date         by remember { mutableStateOf("") }
     var description  by remember { mutableStateOf("") }
+    var category     by remember { mutableStateOf("All") }
     var isFree       by remember { mutableStateOf(false) }
     var priceOrd     by remember { mutableStateOf("") }
     var priceVIP     by remember { mutableStateOf("") }
     var priceVVIP    by remember { mutableStateOf("") }
     var showDelete   by remember { mutableStateOf(false) }
     var saving       by remember { mutableStateOf(false) }
+
+    val categories = listOf("All", "Music", "Tech", "Sports", "Food")
 
     // Pre-fill when editing
     LaunchedEffect(existingEvent) {
@@ -55,6 +58,7 @@ fun EventEditorScreen(navController: NavController, eventId: String?) {
             location    = e.location
             date        = e.date
             description = e.description
+            category    = e.category
             isFree      = e.isFree
             priceOrd    = if (e.priceOrdinary > 0) e.priceOrdinary.toString() else ""
             priceVIP    = if (e.priceVIP > 0)      e.priceVIP.toString()      else ""
@@ -133,6 +137,21 @@ fun EventEditorScreen(navController: NavController, eventId: String?) {
                 placeholder = { Text("e.g. Sat, 14 Jun 2025 · 7:00 PM") },
                 singleLine = true
             )
+            
+            Text("Category", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                categories.forEach { cat ->
+                    FilterChip(
+                        selected = category == cat,
+                        onClick = { category = cat },
+                        label = { Text(cat) }
+                    )
+                }
+            }
+
             OutlinedTextField(
                 value = description, onValueChange = { description = it },
                 label = { Text("Description") },
@@ -189,6 +208,7 @@ fun EventEditorScreen(navController: NavController, eventId: String?) {
                         location     = location,
                         date         = date,
                         description  = description,
+                        category     = category,
                         isFree       = isFree,
                         priceOrdinary= priceOrd.toLongOrNull() ?: 0L,
                         priceVIP     = priceVIP.toLongOrNull() ?: 0L,

@@ -3,14 +3,16 @@ package com.nedejje.vibe.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.nedejje.vibe.R
 
 data class TeamMember(val name: String, val role: String, val id: String)
 
@@ -28,7 +30,7 @@ fun TeamScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Project Team") },
+                title = { Text("Project Team", style = MaterialTheme.typography.titleLarge) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -41,7 +43,7 @@ fun TeamScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
+                .padding(dimensionResource(R.dimen.padding_medium))
         ) {
             item {
                 Text(
@@ -50,19 +52,32 @@ fun TeamScreen(navController: NavController) {
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacer_medium)))
             }
             items(team) { member ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                        .padding(vertical = dimensionResource(R.dimen.padding_extra_small)),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = member.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text(text = member.role, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary)
-                        Text(text = "Reg No: ${member.id}", style = MaterialTheme.typography.bodySmall)
+                    Column(modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium))) {
+                        Text(
+                            text = member.name, 
+                            style = MaterialTheme.typography.titleMedium, 
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = member.role, 
+                            style = MaterialTheme.typography.bodyMedium, 
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = "Reg No: ${member.id}", 
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
                     }
                 }
             }

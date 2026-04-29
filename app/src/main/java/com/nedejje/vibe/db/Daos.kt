@@ -25,6 +25,9 @@ interface EventDao {
 
     @Delete
     suspend fun delete(event: EventEntity)
+
+    @Query("UPDATE events SET isCancelled = :cancelled WHERE id = :id")
+    suspend fun updateCancellation(id: String, cancelled: Boolean)
 }
 
 @Dao
@@ -34,6 +37,9 @@ interface UserDao {
 
     @Query("SELECT * FROM users WHERE email = :email LIMIT 1")
     suspend fun getByEmail(email: String): UserEntity?
+
+    @Query("SELECT * FROM users WHERE name LIKE :query OR email LIKE :query")
+    fun searchUsers(query: String): Flow<List<UserEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(user: UserEntity)
@@ -77,6 +83,9 @@ interface TicketDao {
     @Query("SELECT * FROM tickets WHERE userId = :userId")
     fun observeByUser(userId: String): Flow<List<TicketEntity>>
 
+    @Query("SELECT * FROM tickets WHERE id = :id")
+    suspend fun getById(id: String): TicketEntity?
+
     @Query("SELECT COUNT(*) FROM tickets WHERE eventId = :eventId")
     fun countByEvent(eventId: String): Flow<Int>
 
@@ -85,6 +94,9 @@ interface TicketDao {
 
     @Query("UPDATE tickets SET isUsed = :isUsed WHERE id = :id")
     suspend fun updateUsage(id: String, isUsed: Boolean)
+
+    @Query("UPDATE tickets SET isCancelled = :cancelled WHERE id = :id")
+    suspend fun updateCancellation(id: String, cancelled: Boolean)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(ticket: TicketEntity)
@@ -124,4 +136,67 @@ interface BudgetDao {
 
     @Query("SELECT SUM(amount) FROM budget_items WHERE eventId = :eventId")
     fun observeTotalByEvent(eventId: String): Flow<Double?>
+}
+
+@Dao
+interface FavoriteDao {
+    @Query("SELECT eventId FROM favorites WHERE userId = :userId")
+    fun observeFavorites(userId: String): Flow<List<String>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(favorite: FavoriteEntity)
+
+    @Delete
+    suspend fun delete(favorite: FavoriteEntity)
+
+    @Query("SELECT EXISTS(SELECT 1 FROM favorites WHERE userId = :userId AND eventId = :eventId)")
+    fun isFavorite(userId: String, eventId: String): Flow<Boolean>
+}
+
+@Dao
+interface FollowDao {
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun follow(follow: FollowEntity)
+
+    @Delete
+    suspend fun unfollow(follow: FollowEntity)
+
+    @Query("SELECT followedId FROM follows WHERE followerId = :userId")
+    fun getFollowing(userId: String): Flow<List<String>>
+
+    @Query("SELECT followerId FROM follows WHERE followedId = :userId")
+    fun getFollowers(userId: String): Flow<List<String>>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM follows WHERE followerId = :followerId AND followedId = :followedId)")
+    fun isFollowing(followerId: String, followedId: String): Flow<Boolean>
+}
+
+@Dao
+interface ReviewDao {
+    @Query("SELECT * FROM reviews WHERE eventId = :eventId ORDER BY createdAt DESC")
+    fun observeByEvent(eventId: String): Flow<List<ReviewEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(review: ReviewEntity)
+
+    @Delete
+    suspend fun delete(review: ReviewEntity)
+
+    @Query("SELECT AVG(rating) FROM reviews WHERE eventId = :eventId")
+    fun getAverageRating(eventId: String): Flow<Double?>
+}
+
+@Dao
+interface PaymentDao {
+    @Query("SELECT * FROM payments WHERE userId = :userId ORDER BY createdAt DESC")
+    fun observeByUser(userId: String): Flow<List<PaymentEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(payment: PaymentEntity)
+
+    @Update
+    suspend fun update(payment: PaymentEntity)
+
+    @Query("SELECT * FROM payments WHERE id = :id")
+    suspend fun getById(id: String): PaymentEntity?
 }

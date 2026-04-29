@@ -13,10 +13,12 @@ data class EventEntity(
     val location: String,
     val date: String,
     val description: String,
+    val category: String = "All", // Added category field
     val isFree: Boolean,
     val priceOrdinary: Long,
     val priceVIP: Long,
     val priceVVIP: Long,
+    val isCancelled: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )
 
@@ -72,14 +74,21 @@ data class TicketEntity(
     val price: Long,               // 0 for free tickets
     val quantity: Int = 1,
     val purchasedAt: Long = System.currentTimeMillis(),
-    val isUsed: Boolean = false
+    val isUsed: Boolean = false,
+    val isCancelled: Boolean = false,
+    val paymentId: String? = null // Reference to a payment transaction
 )
 
 // ── Contribution (Potluck) ─────────────────────────────────────────────────────
 @Entity(
     tableName = "contributions",
     foreignKeys = [
-        ForeignKey(entity = EventEntity::class, parentColumns = ["id"], childColumns = ["eventId"], onDelete = ForeignKey.CASCADE)
+        ForeignKey(
+            entity = EventEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["eventId"],
+            onDelete = ForeignKey.CASCADE
+        )
     ],
     indices = [Index("eventId")]
 )
@@ -95,7 +104,12 @@ data class ContributionEntity(
 @Entity(
     tableName = "budget_items",
     foreignKeys = [
-        ForeignKey(entity = EventEntity::class, parentColumns = ["id"], childColumns = ["eventId"], onDelete = ForeignKey.CASCADE)
+        ForeignKey(
+            entity = EventEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["eventId"],
+            onDelete = ForeignKey.CASCADE
+        )
     ],
     indices = [Index("eventId")]
 )
@@ -104,4 +118,66 @@ data class BudgetItemEntity(
     val eventId: String,
     val name: String,
     val amount: Double
+)
+
+// ── Favorite (Wishlist) ────────────────────────────────────────────────────────
+@Entity(
+    tableName = "favorites",
+    primaryKeys = ["userId", "eventId"],
+    foreignKeys = [
+        ForeignKey(entity = UserEntity::class, parentColumns = ["id"], childColumns = ["userId"], onDelete = ForeignKey.CASCADE),
+        ForeignKey(entity = EventEntity::class, parentColumns = ["id"], childColumns = ["eventId"], onDelete = ForeignKey.CASCADE)
+    ],
+    indices = [Index("eventId")]
+)
+data class FavoriteEntity(
+    val userId: String,
+    val eventId: String,
+    val savedAt: Long = System.currentTimeMillis()
+)
+
+// ── Social: Follow ────────────────────────────────────────────────────────────
+@Entity(
+    tableName = "follows",
+    primaryKeys = ["followerId", "followedId"],
+    foreignKeys = [
+        ForeignKey(entity = UserEntity::class, parentColumns = ["id"], childColumns = ["followerId"], onDelete = ForeignKey.CASCADE),
+        ForeignKey(entity = UserEntity::class, parentColumns = ["id"], childColumns = ["followedId"], onDelete = ForeignKey.CASCADE)
+    ],
+    indices = [Index("followedId")]
+)
+data class FollowEntity(
+    val followerId: String,
+    val followedId: String,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+// ── Event: Review/Comment ─────────────────────────────────────────────────────
+@Entity(
+    tableName = "reviews",
+    foreignKeys = [
+        ForeignKey(entity = UserEntity::class,  parentColumns = ["id"], childColumns = ["userId"],  onDelete = ForeignKey.CASCADE),
+        ForeignKey(entity = EventEntity::class, parentColumns = ["id"], childColumns = ["eventId"], onDelete = ForeignKey.CASCADE)
+    ],
+    indices = [Index("userId"), Index("eventId")]
+)
+data class ReviewEntity(
+    @PrimaryKey val id: String,
+    val userId: String,
+    val eventId: String,
+    val rating: Int, // 1-5
+    val comment: String,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+// ── Payments ──────────────────────────────────────────────────────────────────
+@Entity(tableName = "payments")
+data class PaymentEntity(
+    @PrimaryKey val id: String,
+    val userId: String,
+    val amount: Long,
+    val provider: String, // e.g., "MTN_MOMO", "AIRTEL_MONEY"
+    val phoneNumber: String,
+    val status: String, // "PENDING", "SUCCESS", "FAILED"
+    val createdAt: Long = System.currentTimeMillis()
 )

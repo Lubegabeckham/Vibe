@@ -2,115 +2,92 @@ package com.nedejje.vibe.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.nedejje.vibe.R
 
-// Syne — geometric display font for headlines (distinctive & modern)
-// Nunito — rounded, warm body font for readability
-// We use downloadable Google Fonts via Compose's font provider mechanism.
-// Since we can't declare font files here, we reference system serif + sans as
-// graceful fallbacks, but in the project you would add the font XML resources.
+// Custom Fonts implementation
+// Note: Move .ttf files from res/drawable/fonts to res/font and rename to lowercase with underscores
+val PlayfairDisplay = FontFamily(
+    Font(R.font.playfair_display_regular, FontWeight.Normal),
+    Font(R.font.playfair_display_medium, FontWeight.Medium),
+    Font(R.font.playfair_display_semibold, FontWeight.SemiBold),
+    Font(R.font.playfair_display_bold, FontWeight.Bold),
+    Font(R.font.playfair_display_black, FontWeight.Black)
+)
 
-val DisplayFontFamily = FontFamily.Serif     // Replace with Syne via Google Fonts
-val BodyFontFamily    = FontFamily.SansSerif // Replace with Nunito via Google Fonts
+val SourceSans = FontFamily(
+    Font(R.font.source_sans_regular, FontWeight.Normal),
+    Font(R.font.source_sans_medium, FontWeight.Medium),
+    Font(R.font.source_sans_semibold, FontWeight.SemiBold),
+    Font(R.font.source_sans_bold, FontWeight.Bold),
+    Font(R.font.source_sans_black, FontWeight.Black)
+)
 
 val Typography = Typography(
     displayLarge = TextStyle(
-        fontFamily = DisplayFontFamily,
+        fontFamily = PlayfairDisplay,
         fontWeight = FontWeight.Black,
-        fontSize = 48.sp,
-        lineHeight = 52.sp,
-        letterSpacing = (-1.5).sp
+        fontSize = 57.sp,
+        lineHeight = 64.sp,
+        letterSpacing = (-0.25).sp
     ),
     displayMedium = TextStyle(
-        fontFamily = DisplayFontFamily,
-        fontWeight = FontWeight.Black,
-        fontSize = 38.sp,
-        lineHeight = 44.sp,
-        letterSpacing = (-1).sp
+        fontFamily = PlayfairDisplay,
+        fontWeight = FontWeight.Bold,
+        fontSize = 45.sp,
+        lineHeight = 52.sp,
+        letterSpacing = 0.sp
     ),
     headlineLarge = TextStyle(
-        fontFamily = DisplayFontFamily,
+        fontFamily = PlayfairDisplay,
         fontWeight = FontWeight.Bold,
-        fontSize = 30.sp,
-        lineHeight = 36.sp,
-        letterSpacing = (-0.5).sp
+        fontSize = 32.sp,
+        lineHeight = 40.sp,
+        letterSpacing = 0.sp
     ),
     headlineMedium = TextStyle(
-        fontFamily = DisplayFontFamily,
-        fontWeight = FontWeight.Bold,
-        fontSize = 26.sp,
-        lineHeight = 32.sp,
-        letterSpacing = (-0.3).sp
-    ),
-    headlineSmall = TextStyle(
-        fontFamily = DisplayFontFamily,
+        fontFamily = PlayfairDisplay,
         fontWeight = FontWeight.SemiBold,
-        fontSize = 22.sp,
-        lineHeight = 28.sp
+        fontSize = 28.sp,
+        lineHeight = 36.sp,
+        letterSpacing = 0.sp
     ),
     titleLarge = TextStyle(
-        fontFamily = BodyFontFamily,
+        fontFamily = SourceSans,
         fontWeight = FontWeight.Bold,
-        fontSize = 20.sp,
-        lineHeight = 26.sp,
+        fontSize = 22.sp,
+        lineHeight = 28.sp,
         letterSpacing = 0.sp
     ),
     titleMedium = TextStyle(
-        fontFamily = BodyFontFamily,
+        fontFamily = SourceSans,
         fontWeight = FontWeight.SemiBold,
         fontSize = 16.sp,
-        lineHeight = 22.sp,
-        letterSpacing = 0.1.sp
-    ),
-    titleSmall = TextStyle(
-        fontFamily = BodyFontFamily,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-        letterSpacing = 0.1.sp
-    ),
-    bodyLarge = TextStyle(
-        fontFamily = BodyFontFamily,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 26.sp,
+        lineHeight = 24.sp,
         letterSpacing = 0.15.sp
     ),
+    bodyLarge = TextStyle(
+        fontFamily = SourceSans,
+        fontWeight = FontWeight.Normal,
+        fontSize = 16.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    ),
     bodyMedium = TextStyle(
-        fontFamily = BodyFontFamily,
+        fontFamily = SourceSans,
         fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 22.sp,
-        letterSpacing = 0.25.sp
-    ),
-    bodySmall = TextStyle(
-        fontFamily = BodyFontFamily,
-        fontWeight = FontWeight.Normal,
-        fontSize = 12.sp,
-        lineHeight = 18.sp,
-        letterSpacing = 0.4.sp
-    ),
-    labelLarge = TextStyle(
-        fontFamily = BodyFontFamily,
-        fontWeight = FontWeight.SemiBold,
         fontSize = 14.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.25.sp
     ),
-    labelMedium = TextStyle(
-        fontFamily = BodyFontFamily,
+    labelLarge = TextStyle(
+        fontFamily = SourceSans,
         fontWeight = FontWeight.Medium,
-        fontSize = 12.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = BodyFontFamily,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.1.sp
     )
 )

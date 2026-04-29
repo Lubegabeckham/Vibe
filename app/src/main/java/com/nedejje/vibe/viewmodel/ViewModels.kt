@@ -61,7 +61,7 @@ class AuthViewModel(private val userRepo: UserRepository) : ViewModel() {
                     email        = email.trim(),
                     phone        = phone.trim(),
                     isAdmin      = isAdmin,
-                    passwordHash = password  // Demo: store as-is. Production: BCrypt.hashpw(password, BCrypt.gensalt())
+                    passwordHash = password 
                 )
                 userRepo.insert(newUser)
                 SessionManager.login(newUser)
@@ -70,7 +70,7 @@ class AuthViewModel(private val userRepo: UserRepository) : ViewModel() {
         }
     }
 
-    fun sendPasswordReset(email: String) { /* Integrate Firebase / email SDK here */ }
+    fun sendPasswordReset(email: String) { /* TODO */ }
 
     class Factory(private val repo: UserRepository) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
@@ -79,7 +79,10 @@ class AuthViewModel(private val userRepo: UserRepository) : ViewModel() {
 }
 
 // ── HomeViewModel ──────────────────────────────────────────────────────────────
-class HomeViewModel(private val eventRepo: EventRepository) : ViewModel() {
+class HomeViewModel(
+    private val eventRepo: EventRepository,
+    private val favRepo: FavoriteRepository
+) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -94,16 +97,26 @@ class HomeViewModel(private val eventRepo: EventRepository) : ViewModel() {
 
     fun onSearchQueryChange(query: String) { _searchQuery.value = query }
 
-    class Factory(private val repo: EventRepository) : ViewModelProvider.Factory {
+    fun toggleFavorite(eventId: String, isFav: Boolean) {
+        viewModelScope.launch {
+            favRepo.toggleFavorite(SessionManager.userId, eventId, isFav)
+        }
+    }
+
+    class Factory(
+        private val repo: EventRepository,
+        private val favRepo: FavoriteRepository
+    ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>) = HomeViewModel(repo) as T
+        override fun <T : ViewModel> create(modelClass: Class<T>) = HomeViewModel(repo, favRepo) as T
     }
 }
 
 // ── EventDetailViewModel ───────────────────────────────────────────────────────
 class EventDetailViewModel(
     private val eventRepo : EventRepository,
-    private val ticketRepo: TicketRepository
+    private val ticketRepo: TicketRepository,
+    private val favRepo: FavoriteRepository
 ) : ViewModel() {
 
     private val _event       = MutableStateFlow<EventEntity?>(null)
@@ -114,19 +127,33 @@ class EventDetailViewModel(
     val ticketCount: StateFlow<Int>          = _ticketCount.asStateFlow()
     val revenue:     StateFlow<Long>         = _revenue.asStateFlow()
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val isFavorite = _event.flatMapLatest { e ->
+        if (e == null) flowOf(false)
+        else favRepo.isFavorite(SessionManager.userId, e.id)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
     fun load(eventId: String) {
         viewModelScope.launch { _event.value = eventRepo.getById(eventId) }
         viewModelScope.launch { ticketRepo.countByEvent(eventId).collect  { _ticketCount.value = it } }
         viewModelScope.launch { ticketRepo.revenueByEvent(eventId).collect { _revenue.value = it ?: 0L } }
     }
 
+    fun toggleFavorite() {
+        val currentEvent = _event.value ?: return
+        viewModelScope.launch {
+            favRepo.toggleFavorite(SessionManager.userId, currentEvent.id, !isFavorite.value)
+        }
+    }
+
     class Factory(
         private val eventRepo : EventRepository,
-        private val ticketRepo: TicketRepository
+        private val ticketRepo: TicketRepository,
+        private val favRepo: FavoriteRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>) =
-            EventDetailViewModel(eventRepo, ticketRepo) as T
+            EventDetailViewModel(eventRepo, ticketRepo, favRepo) as T
     }
 }
 
@@ -142,7 +169,7 @@ class EventEditorViewModel(private val repo: EventRepository) : ViewModel() {
 
     fun save(
         id: String?, title: String, location: String, date: String,
-        description: String, isFree: Boolean,
+        description: String, category: String, isFree: Boolean,
         priceOrdinary: Long, priceVIP: Long, priceVVIP: Long,
         onDone: () -> Unit
     ) {
@@ -153,6 +180,7 @@ class EventEditorViewModel(private val repo: EventRepository) : ViewModel() {
                 location     = location.trim(),
                 date         = date.trim(),
                 description  = description.trim(),
+                category     = category,
                 isFree       = isFree,
                 priceOrdinary= priceOrdinary,
                 priceVIP     = priceVIP,
@@ -170,50 +198,6 @@ class EventEditorViewModel(private val repo: EventRepository) : ViewModel() {
     class Factory(private val repo: EventRepository) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>) = EventEditorViewModel(repo) as T
-    }
-}
-
-// ── GuestManagerViewModel ──────────────────────────────────────────────────────
-class GuestManagerViewModel(private val repo: GuestRepository) : ViewModel() {
-
-    private val _eventId     = MutableStateFlow("")
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val guests: StateFlow<List<GuestEntity>> =
-        combine(_eventId, _searchQuery) { id, q -> id to q }
-            .debounce(300)
-            .flatMapLatest { (eventId, q) ->
-                when {
-                    eventId.isBlank() -> flowOf(emptyList())
-                    q.isBlank()       -> repo.observeByEvent(eventId)
-                    else              -> repo.searchInEvent(eventId, q)
-                }
-            }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-
-    val guestCount: StateFlow<Int> = _eventId
-        .flatMapLatest { id -> if (id.isBlank()) flowOf(0) else repo.countByEvent(id) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
-
-    val checkedInCount: StateFlow<Int> = _eventId
-        .flatMapLatest { id -> if (id.isBlank()) flowOf(0) else repo.countCheckedIn(id) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
-
-    fun setEventId(eventId: String) { _eventId.value = eventId }
-    fun onSearchQueryChange(q: String) { _searchQuery.value = q }
-    fun updateStatus(id: String, status: String) { viewModelScope.launch { repo.updateStatus(id, status) } }
-    fun checkIn(id: String)  { viewModelScope.launch { repo.checkIn(id) } }
-    fun checkOut(id: String) { viewModelScope.launch { repo.checkOut(id) } }
-    fun addGuest(eventId: String, name: String, email: String, phone: String, tag: String, diet: String) {
-        viewModelScope.launch { repo.createGuest(eventId, name, email, phone, tag, diet) }
-    }
-    fun deleteGuest(guest: GuestEntity) { viewModelScope.launch { repo.delete(guest) } }
-
-    class Factory(private val repo: GuestRepository) : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>) = GuestManagerViewModel(repo) as T
     }
 }
 
@@ -256,75 +240,86 @@ class TicketViewModel(
     }
 }
 
-// ── ContributionViewModel ──────────────────────────────────────────────────────
+// ── Other ViewModels (Guest, Contribution, Budget, WrapReport, Invitation) stay as defined before ──
+class GuestManagerViewModel(private val repo: GuestRepository) : ViewModel() {
+    private val _eventId     = MutableStateFlow("")
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val guests: StateFlow<List<GuestEntity>> = combine(_eventId, _searchQuery) { id, q -> id to q }
+            .debounce(300).flatMapLatest { (eventId, q) ->
+                when {
+                    eventId.isBlank() -> flowOf(emptyList())
+                    q.isBlank()       -> repo.observeByEvent(eventId)
+                    else              -> repo.searchInEvent(eventId, q)
+                }
+            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val guestCount: StateFlow<Int> = _eventId.flatMapLatest { id -> if (id.isBlank()) flowOf(0) else repo.countByEvent(id) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+    val checkedInCount: StateFlow<Int> = _eventId.flatMapLatest { id -> if (id.isBlank()) flowOf(0) else repo.countCheckedIn(id) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+    fun setEventId(eventId: String) { _eventId.value = eventId }
+    fun onSearchQueryChange(q: String) { _searchQuery.value = q }
+    fun updateStatus(id: String, status: String) { viewModelScope.launch { repo.updateStatus(id, status) } }
+    fun checkIn(id: String)  { viewModelScope.launch { repo.checkIn(id) } }
+    fun checkOut(id: String) { viewModelScope.launch { repo.checkOut(id) } }
+    fun addGuest(eventId: String, name: String, email: String, phone: String, tag: String, diet: String) {
+        viewModelScope.launch { repo.createGuest(eventId, name, email, phone, tag, diet) }
+    }
+    fun deleteGuest(guest: GuestEntity) { viewModelScope.launch { repo.delete(guest) } }
+    class Factory(private val repo: GuestRepository) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>) = GuestManagerViewModel(repo) as T
+    }
+}
+
 class ContributionViewModel(private val repo: ContributionRepository) : ViewModel() {
-
     private val _eventId = MutableStateFlow("")
-
     @OptIn(ExperimentalCoroutinesApi::class)
     val contributions: StateFlow<List<ContributionEntity>> = _eventId
         .flatMapLatest { id -> if (id.isBlank()) flowOf(emptyList()) else repo.observeByEvent(id) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-
     fun setEventId(id: String) { _eventId.value = id }
-
     fun addContribution(eventId: String, itemName: String, category: String) {
-        viewModelScope.launch {
-            repo.add(ContributionEntity(UUID.randomUUID().toString(), eventId, itemName, category))
-        }
+        viewModelScope.launch { repo.add(ContributionEntity(UUID.randomUUID().toString(), eventId, itemName, category)) }
     }
-
     fun claimItem(id: String, name: String)  { viewModelScope.launch { repo.updateClaim(id, name) } }
     fun unclaimItem(id: String)              { viewModelScope.launch { repo.updateClaim(id, null) } }
     fun deleteContribution(c: ContributionEntity) { viewModelScope.launch { repo.delete(c) } }
-
     class Factory(private val repo: ContributionRepository) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>) = ContributionViewModel(repo) as T
     }
 }
 
-// ── BudgetViewModel ────────────────────────────────────────────────────────────
 class BudgetViewModel(private val repo: BudgetRepository) : ViewModel() {
-
     private val _eventId = MutableStateFlow("")
-
     @OptIn(ExperimentalCoroutinesApi::class)
     val items: StateFlow<List<BudgetItemEntity>> = _eventId
         .flatMapLatest { id -> if (id.isBlank()) flowOf(emptyList()) else repo.observeByEvent(id) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-
     @OptIn(ExperimentalCoroutinesApi::class)
     val totalSpend: StateFlow<Double> = _eventId
         .flatMapLatest { id -> if (id.isBlank()) flowOf(0.0) else repo.observeTotalByEvent(id) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0.0)
-
     fun setEventId(id: String) { _eventId.value = id }
-
     fun addItem(eventId: String, name: String, amount: Double) {
-        viewModelScope.launch {
-            repo.add(BudgetItemEntity(UUID.randomUUID().toString(), eventId, name.trim(), amount))
-        }
+        viewModelScope.launch { repo.add(BudgetItemEntity(UUID.randomUUID().toString(), eventId, name.trim(), amount)) }
     }
-
     fun deleteItem(item: BudgetItemEntity) { viewModelScope.launch { repo.delete(item) } }
-
     class Factory(private val repo: BudgetRepository) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>) = BudgetViewModel(repo) as T
     }
 }
 
-// ── WrapReportViewModel ────────────────────────────────────────────────────────
 class WrapReportViewModel(
     private val eventRepo : EventRepository,
     private val guestRepo : GuestRepository,
     private val budgetRepo: BudgetRepository,
     private val ticketRepo: TicketRepository
 ) : ViewModel() {
-
     private val _eventId = MutableStateFlow("")
-
     @OptIn(ExperimentalCoroutinesApi::class)
     val event         = _eventId.flatMapLatest { id -> flowOf(if (id.isBlank()) null else eventRepo.getById(id)) }
                                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -338,9 +333,7 @@ class WrapReportViewModel(
                                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0L)
     val budgetItems   = _eventId.flatMapLatest { id -> if (id.isBlank()) flowOf(emptyList()) else budgetRepo.observeByEvent(id) }
                                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-
     fun setEventId(id: String) { _eventId.value = id }
-
     class Factory(
         private val eventRepo : EventRepository,
         private val guestRepo : GuestRepository,
@@ -348,22 +341,16 @@ class WrapReportViewModel(
         private val ticketRepo: TicketRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>) =
-            WrapReportViewModel(eventRepo, guestRepo, budgetRepo, ticketRepo) as T
+        override fun <T : ViewModel> create(modelClass: Class<T>) = WrapReportViewModel(eventRepo, guestRepo, budgetRepo, ticketRepo) as T
     }
 }
 
-// ── InvitationViewModel ────────────────────────────────────────────────────────
 class InvitationViewModel(private val eventRepo: EventRepository) : ViewModel() {
-
     private val _eventId = MutableStateFlow("")
-
     @OptIn(ExperimentalCoroutinesApi::class)
     val event = _eventId.flatMapLatest { id -> flowOf(if (id.isBlank()) null else eventRepo.getById(id)) }
                         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-
     fun setEventId(id: String) { _eventId.value = id }
-
     class Factory(private val repo: EventRepository) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>) = InvitationViewModel(repo) as T

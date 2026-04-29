@@ -31,6 +31,7 @@ import com.nedejje.vibe.db.EventEntity
 import com.nedejje.vibe.session.SessionManager
 import com.nedejje.vibe.ui.navigation.Screen
 import com.nedejje.vibe.viewmodel.HomeViewModel
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,7 +43,13 @@ fun AdminHomeScreen(
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as VibeApplication
-    val viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory(app.container.eventRepository))
+    val viewModel: HomeViewModel = viewModel(
+        factory = HomeViewModel.Factory(
+            app.container.eventRepository,
+            app.container.favoriteRepository
+        )
+    )
+    val scope = rememberCoroutineScope()
 
     val events by viewModel.events.collectAsStateWithLifecycle()
     val currentUser by SessionManager.currentUser.collectAsState()
@@ -181,7 +188,7 @@ fun AdminHomeScreen(
                 Text("Organiser Tools", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             }
 
-            // Tool grid – navigate to first event if any, or "new" if none
+            // Tool grid
             item {
                 val firstEventId = events.firstOrNull()?.id ?: "new"
                 Row(
@@ -191,7 +198,7 @@ fun AdminHomeScreen(
                     AdminToolIcon("Guests",  Icons.Default.Groups)                  { navController.navigate(Screen.GuestManager.createRoute(firstEventId)) }
                     AdminToolIcon("Budget",  Icons.Default.AccountBalanceWallet)    { navController.navigate(Screen.BudgetTracker.createRoute(firstEventId)) }
                     AdminToolIcon("Potluck", Icons.Default.Restaurant)              { navController.navigate(Screen.Contribution.createRoute(firstEventId)) }
-                    AdminToolIcon("Reports", Icons.Default.BarChart)                { navController.navigate(Screen.WrapReport.createRoute(firstEventId)) }
+                    AdminToolIcon("Scanner", Icons.Default.QrCodeScanner)            { navController.navigate(Screen.QrScanner.route) }
                 }
             }
 
@@ -204,7 +211,7 @@ fun AdminHomeScreen(
                 ) {
                     Text("Your Events", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Text("${events.size} event${if (events.size != 1) "s" else ""}",
-                        style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
@@ -231,7 +238,12 @@ fun AdminHomeScreen(
                     event          = event,
                     onEdit         = { navController.navigate(Screen.EventEditor.createRoute(event.id)) },
                     onDeleteRequest = { eventPendingDelete = event },
-                    onManage       = { navController.navigate(Screen.GuestManager.createRoute(event.id)) }
+                    onManage       = { navController.navigate(Screen.GuestManager.createRoute(event.id)) },
+                    onToggleCancel = { 
+                        scope.launch { 
+                            app.container.eventRepository.cancelEvent(event.id, !event.isCancelled)
+                        }
+                    }
                 )
             }
 
@@ -284,7 +296,8 @@ fun AdminEventCard(
     event: EventEntity,
     onEdit: () -> Unit,
     onDeleteRequest: () -> Unit,
-    onManage: () -> Unit
+    onManage: () -> Unit,
+    onToggleCancel: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -298,7 +311,16 @@ fun AdminEventCard(
                 verticalAlignment = Alignment.Top
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(event.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(event.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        if (event.isCancelled) {
+                            Spacer(Modifier.width(8.dp))
+                            Surface(color = MaterialTheme.colorScheme.error, shape = RoundedCornerShape(4.dp)) {
+                                Text("CANCELLED", modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                    style = MaterialTheme.typography.labelSmall, color = Color.White, fontWeight = FontWeight.Black)
+                            }
+                        }
+                    }
                     Spacer(Modifier.height(2.dp))
                     Text(event.location, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(event.date, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -322,6 +344,11 @@ fun AdminEventCard(
                     Icon(Icons.Default.Groups, null, Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
                     Text("Manage", fontSize = 12.sp)
+                }
+                OutlinedButton(onClick = onToggleCancel) {
+                    Icon(if (event.isCancelled) Icons.Default.EventAvailable else Icons.Default.EventBusy, 
+                        contentDescription = "Toggle Cancel", Modifier.size(16.dp),
+                        tint = if (event.isCancelled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
                 }
                 OutlinedButton(onClick = onEdit) {
                     Icon(Icons.Default.Edit, "Edit", Modifier.size(16.dp))
