@@ -2,14 +2,17 @@
     <string name="app_name">Vibe</string>
     <string name="login_title">Login to Vibe</string>
     <string name="signup_title">Join Vibe</string>
+    <string name="welcome_back">Welcome back</string>
     <string name="email_label">Email</string>
     <string name="password_label">Password</string>
     <string name="full_name_label">Full Name</string>
     <string name="login_button">Login</string>
     <string name="signup_button">Sign Up</string>
+    <string name="forgot_password">Forgot password?</string>
     <string name="create_account_button">Create Account</string>
     <string name="no_account_text">Don\'t have an account? Sign up</string>
     <string name="already_have_account_text">Already have an account? Login</string>
+    <string name="new_to_vibe">New to Vibe?</string>
     <string name="discovery_title">Vibe Discovery</string>
     <string name="admin_dashboard_title">Event Manager Dashboard</string>
     <string name="discover_events_header">Discover Events</string>
@@ -24,4 +27,8 @@
     <string name="free_badge">FREE</string>
     <string name="ugx_currency">UGX</string>
     <string name="starting_from">Starting from %1$s %2$s</string>
+    <string name="entry_gate_instruction">Show this screen at the entry gate</string>
+    <string name="share_ticket">Share</string>
+    <string name="done_button">Done</string>
+    <string name="add_to_calendar">Add to Calendar</string>
 </resources>
