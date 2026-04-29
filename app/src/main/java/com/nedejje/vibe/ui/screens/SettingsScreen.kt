@@ -12,10 +12,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.nedejje.vibe.R
 import com.nedejje.vibe.session.SessionManager
 import com.nedejje.vibe.ui.navigation.Screen
 
@@ -55,22 +58,22 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.titleLarge) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
                     }
                 }
             )
         }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_extra_small))
         ) {
             // Account section
             item {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
                 SettingsSectionHeader("Account")
             }
             item {
@@ -85,7 +88,7 @@ fun SettingsScreen(
 
             // Appearance
             item {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
                 SettingsSectionHeader("Appearance")
             }
             item {
@@ -99,7 +102,7 @@ fun SettingsScreen(
 
             // Notifications
             item {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
                 SettingsSectionHeader("Notifications")
             }
             item {
@@ -117,45 +120,30 @@ fun SettingsScreen(
                 )
             }
 
-            // Privacy
-            item {
-                Spacer(Modifier.height(8.dp))
-                SettingsSectionHeader("Privacy")
-            }
-            item {
-                SettingsToggleRow(
-                    icon    = Icons.Default.LocationOn,
-                    label   = "Location Services",
-                    checked = locationServices,
-                    onCheckedChange = { locationServices = it }
-                )
-            }
-
             // About
             item {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
                 SettingsSectionHeader("About")
             }
             item {
                 SettingsInfoRow(Icons.Default.Info,      "Version",   "1.0.0")
-                SettingsInfoRow(Icons.Default.Copyright, "Developer", "Nedejje Studio")
                 SettingsInfoRow(Icons.Default.Public,    "Platform",  "Uganda 🇺🇬")
             }
 
             // Logout
             item {
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen.padding_medium)))
                 OutlinedButton(
                     onClick = { showLogoutDialog = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.fillMaxWidth().height(dimensionResource(R.dimen.button_height)),
+                    shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius)),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ExitToApp, null, Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("Log Out", fontWeight = FontWeight.SemiBold)
+                    Icon(Icons.AutoMirrored.Filled.ExitToApp, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp))
+                    Spacer(Modifier.width(dimensionResource(R.dimen.padding_small)))
+                    Text(stringResource(R.string.logout_button), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 }
-                Spacer(Modifier.height(32.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen.spacer_large)))
             }
         }
     }
@@ -168,23 +156,23 @@ private fun SettingsSectionHeader(title: String) {
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
         fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(vertical = 4.dp)
+        modifier = Modifier.padding(vertical = dimensionResource(R.dimen.padding_extra_small))
     )
 }
 
 @Composable
 private fun SettingsInfoRow(icon: ImageVector, label: String, value: String) {
     Surface(
-        shape  = RoundedCornerShape(12.dp),
+        shape  = RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius_small)),
         color  = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium), vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
-            Spacer(Modifier.width(12.dp))
+            Icon(icon, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp), tint = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.width(dimensionResource(R.dimen.padding_small) + 4.dp))
             Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
             Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -199,16 +187,16 @@ private fun SettingsToggleRow(
     onCheckedChange: (Boolean) -> Unit
 ) {
     Surface(
-        shape  = RoundedCornerShape(12.dp),
+        shape  = RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius_small)),
         color  = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium), vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
-            Spacer(Modifier.width(12.dp))
+            Icon(icon, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp), tint = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.width(dimensionResource(R.dimen.padding_small) + 4.dp))
             Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
             Switch(checked = checked, onCheckedChange = onCheckedChange)
         }

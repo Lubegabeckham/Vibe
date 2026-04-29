@@ -4,16 +4,20 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.nedejje.vibe.R
 import com.nedejje.vibe.ui.navigation.Screen
 import kotlinx.coroutines.delay
 
@@ -54,7 +58,7 @@ fun SplashScreen(navController: NavController) {
                     radius = 1400f
                 )
             ),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center // Part B: Centered Layout
     ) {
         // Glow behind logo
         Box(
@@ -65,17 +69,18 @@ fun SplashScreen(navController: NavController) {
                 )
         )
 
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center // Part B: Centered Layout
+        ) {
             AnimatedVisibility(
                 visible = visible,
                 enter = fadeIn(tween(600)) + scaleIn(tween(600, easing = FastOutSlowInEasing), initialScale = 0.7f)
             ) {
                 Text(
-                    text = "vibe.",
-                    fontSize = 72.sp,
-                    fontWeight = FontWeight.Black,
-                    color = NeonLilac,
-                    letterSpacing = (-2).sp
+                    text = stringResource(R.string.vibe_logo_text),
+                    style = MaterialTheme.typography.displayLarge, // Part A: Typography
+                    color = NeonLilac
                 )
             }
 
@@ -84,11 +89,10 @@ fun SplashScreen(navController: NavController) {
                 enter = fadeIn(tween(500)) + slideInVertically(tween(500)) { it / 2 }
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
                     Text(
-                        text = "experience the moment",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Light,
+                        text = stringResource(R.string.experience_moment),
+                        style = MaterialTheme.typography.labelLarge,
                         color = GoldAccent.copy(alpha = 0.9f),
                         letterSpacing = 3.sp
                     )
@@ -97,10 +101,18 @@ fun SplashScreen(navController: NavController) {
         }
 
         // Version tag at bottom
-        Box(modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 32.dp)) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = dimensionResource(R.dimen.spacer_large))
+        ) {
             AnimatedVisibility(visible = subVisible, enter = fadeIn(tween(800))) {
-                Text("Uganda's premier event platform", fontSize = 11.sp,
-                    color = Color.White.copy(alpha = 0.3f), letterSpacing = 0.5.sp)
+                Text(
+                    text = stringResource(R.string.premier_platform),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White.copy(alpha = 0.3f),
+                    letterSpacing = 0.5.sp
+                )
             }
         }
     }

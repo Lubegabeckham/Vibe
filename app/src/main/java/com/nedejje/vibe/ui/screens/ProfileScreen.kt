@@ -18,12 +18,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.nedejje.vibe.R
 import com.nedejje.vibe.VibeApplication
 import com.nedejje.vibe.session.SessionManager
 import com.nedejje.vibe.ui.navigation.Screen
@@ -102,29 +105,35 @@ fun ProfileScreen(navController: NavController) {
     if (showEditSheet) {
         ModalBottomSheet(onDismissRequest = { showEditSheet = false }) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = dimensionResource(R.dimen.padding_large))
+                    .padding(bottom = dimensionResource(R.dimen.spacer_large)),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_medium))
             ) {
                 Text("Edit Profile", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 OutlinedTextField(
                     value = editName, onValueChange = { editName = it; nameError = false },
-                    label = { Text("Full Name") }, isError = nameError,
+                    label = { Text(stringResource(R.string.full_name_label)) }, isError = nameError,
                     supportingText = { if (nameError) Text("Name cannot be empty") },
                     singleLine = true,
-                    leadingIcon = { Icon(Icons.Default.Person, null, Modifier.size(18.dp)) },
-                    modifier = Modifier.fillMaxWidth()
+                    leadingIcon = { Icon(Icons.Default.Person, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
                 )
                 OutlinedTextField(
                     value = editEmail, onValueChange = { editEmail = it },
-                    label = { Text("Email") }, singleLine = true,
-                    leadingIcon = { Icon(Icons.Default.Email, null, Modifier.size(18.dp)) },
-                    modifier = Modifier.fillMaxWidth()
+                    label = { Text(stringResource(R.string.email_label)) }, singleLine = true,
+                    leadingIcon = { Icon(Icons.Default.Email, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
                 )
                 OutlinedTextField(
                     value = editPhone, onValueChange = { editPhone = it },
                     label = { Text("Phone") }, singleLine = true,
-                    leadingIcon = { Icon(Icons.Default.Phone, null, Modifier.size(18.dp)) },
-                    modifier = Modifier.fillMaxWidth()
+                    leadingIcon = { Icon(Icons.Default.Phone, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
                 )
                 Button(
                     onClick = {
@@ -135,7 +144,8 @@ fun ProfileScreen(navController: NavController) {
                         SessionManager.updateProfile(displayName, email, phone)
                         showEditSheet = false
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().height(dimensionResource(R.dimen.button_height)),
+                    shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
                 ) { Text("Save Changes") }
             }
         }
@@ -165,7 +175,7 @@ fun ProfileScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("My Profile") },
+                title = { Text(stringResource(R.string.profile_title), style = MaterialTheme.typography.titleLarge) },
                 actions = {
                     if (currentUser?.isAdmin == true) {
                         IconButton(onClick = { navController.navigate(Screen.AdminHome.route) }) {
@@ -192,29 +202,33 @@ fun ProfileScreen(navController: NavController) {
                                 listOf(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f), Color.Transparent)
                             )
                         )
-                        .padding(vertical = 24.dp),
+                        .padding(vertical = dimensionResource(R.dimen.padding_large)),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Surface(
-                            modifier = Modifier.size(88.dp),
+                            modifier = Modifier.size(dimensionResource(R.dimen.profile_image_size)),
                             shape = CircleShape,
                             color = MaterialTheme.colorScheme.primary
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Text(initials, style = MaterialTheme.typography.headlineLarge,
-                                    fontWeight = FontWeight.Bold, color = Color.White)
+                                Text(
+                                    text = initials, 
+                                    style = MaterialTheme.typography.displaySmall, 
+                                    fontWeight = FontWeight.Bold, 
+                                    color = Color.White
+                                )
                             }
                         }
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(dimensionResource(R.dimen.padding_medium)))
                         Text(displayName, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                         Text(email, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         if (phone.isNotBlank()) {
                             Text(phone, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         if (currentUser?.isAdmin == true) {
-                            Spacer(Modifier.height(6.dp))
-                            Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
+                            Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
+                            Surface(shape = RoundedCornerShape(dimensionResource(R.dimen.badge_corner_radius)), color = MaterialTheme.colorScheme.secondaryContainer) {
                                 Row(
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                                     verticalAlignment = Alignment.CenterVertically,
@@ -225,10 +239,13 @@ fun ProfileScreen(navController: NavController) {
                                 }
                             }
                         }
-                        Spacer(Modifier.height(12.dp))
-                        FilledTonalButton(onClick = { showEditSheet = true }) {
-                            Icon(Icons.Default.Edit, null, Modifier.size(16.dp))
-                            Spacer(Modifier.width(6.dp))
+                        Spacer(Modifier.height(dimensionResource(R.dimen.padding_medium)))
+                        FilledTonalButton(
+                            onClick = { showEditSheet = true },
+                            shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
+                        ) {
+                            Icon(Icons.Default.Edit, null, Modifier.size(dimensionResource(R.dimen.icon_size_small)))
+                            Spacer(Modifier.width(dimensionResource(R.dimen.padding_small)))
                             Text("Edit Profile")
                         }
                     }
@@ -237,34 +254,43 @@ fun ProfileScreen(navController: NavController) {
 
             item {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+                    horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
                 ) {
                     ProfileStatCard("Upcoming", "$upcomingCount",  Icons.Default.CalendarToday, Modifier.weight(1f))
                     ProfileStatCard("Attended",  "$attendedCount", Icons.Default.CheckCircle,    Modifier.weight(1f))
                     ProfileStatCard(
                         "Spent",
-                        "UGX ${String.format(Locale.getDefault(), "%,d", totalSpent)}",
+                        "${stringResource(R.string.ugx_currency)} ${String.format(Locale.getDefault(), "%,d", totalSpent)}",
                         Icons.Default.AccountBalanceWallet, Modifier.weight(1f)
                     )
                 }
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen.padding_large)))
             }
 
             item {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = dimensionResource(R.dimen.padding_medium)),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text("My Bookings", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text("${filteredBookings.size} ticket${if (filteredBookings.size != 1) "s" else ""}",
-                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    
+                    val countStr = if (filteredBookings.size == 1) 
+                        stringResource(R.string.event_count_singular, filteredBookings.size)
+                    else 
+                        stringResource(R.string.events_count, filteredBookings.size)
+                    
+                    Text(
+                        text = countStr,
+                        style = MaterialTheme.typography.bodySmall, 
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+                    horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
                 ) {
                     FilterChip(selected = activeFilter == null, onClick = { activeFilter = null }, label = { Text("All") })
                     BookingStatus.entries.forEach { status ->
@@ -275,18 +301,18 @@ fun ProfileScreen(navController: NavController) {
                         )
                     }
                 }
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
             }
 
             if (filteredBookings.isEmpty()) {
                 item {
                     Column(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp),
+                        modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(R.dimen.spacer_large)),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
                     ) {
-                        Icon(Icons.Default.ConfirmationNumber, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("No bookings found", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Icon(Icons.Default.ConfirmationNumber, null, Modifier.size(dimensionResource(R.dimen.icon_size_extra_large)), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("No bookings found", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -301,23 +327,24 @@ fun ProfileScreen(navController: NavController) {
                             ticketViewModel.loadForUser(currentUser?.id ?: "")
                         }
                     },
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium))
                 )
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
             }
 
             item {
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen.padding_large)))
                 OutlinedButton(
                     onClick = { showLogoutDialog = true },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = dimensionResource(R.dimen.padding_medium)).height(dimensionResource(R.dimen.button_height)),
+                    shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius)),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ExitToApp, null, Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("Log Out")
+                    Icon(Icons.AutoMirrored.Filled.ExitToApp, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp))
+                    Spacer(Modifier.width(dimensionResource(R.dimen.padding_small)))
+                    Text(stringResource(R.string.logout_button), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 }
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen.spacer_large)))
             }
         }
     }
@@ -325,14 +352,17 @@ fun ProfileScreen(navController: NavController) {
 
 @Composable
 private fun ProfileStatCard(label: String, value: String, icon: ImageVector, modifier: Modifier = Modifier) {
-    Card(modifier = modifier, shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+    Card(
+        modifier = modifier, 
+        shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
         Column(
-            modifier = Modifier.padding(12.dp).fillMaxWidth(),
+            modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)).fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_extra_small))
         ) {
-            Icon(icon, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
+            Icon(icon, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp), tint = MaterialTheme.colorScheme.primary)
             Text(value, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -353,11 +383,11 @@ fun BookingHistoryItem(
     }
     Card(
         modifier = modifier.fillMaxWidth().clickable { onClick() },
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius)),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)).fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -365,11 +395,11 @@ fun BookingHistoryItem(
                 Text(booking.eventName, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
                 Text(booking.date, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (booking.amountPaid > 0) {
-                    Text("UGX ${String.format(Locale.getDefault(), "%,d", booking.amountPaid)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("${stringResource(R.string.ugx_currency)} ${String.format(Locale.getDefault(), "%,d", booking.amountPaid)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Surface(shape = RoundedCornerShape(8.dp), color = badgeContainer) {
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_extra_small))) {
+                Surface(shape = RoundedCornerShape(dimensionResource(R.dimen.badge_corner_radius)), color = badgeContainer) {
                     Text(booking.tier, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                         style = MaterialTheme.typography.labelSmall, color = badgeContent, fontWeight = FontWeight.SemiBold)
                 }
@@ -379,7 +409,7 @@ fun BookingHistoryItem(
                         Text("Cancel", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                     }
                 } else {
-                    Surface(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.surface) {
+                    Surface(shape = RoundedCornerShape(dimensionResource(R.dimen.badge_corner_radius)), color = MaterialTheme.colorScheme.surface) {
                         Text(booking.status.label, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                             style = MaterialTheme.typography.labelSmall, color = badgeContent)
                     }

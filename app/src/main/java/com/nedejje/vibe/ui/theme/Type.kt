@@ -9,21 +9,20 @@ import androidx.compose.ui.unit.sp
 import com.nedejje.vibe.R
 
 // Custom Fonts implementation
-// Note: Move .ttf files from res/drawable/fonts to res/font and rename to lowercase with underscores
 val PlayfairDisplay = FontFamily(
-    Font(R.font.playfair_display_regular, FontWeight.Normal),
-    Font(R.font.playfair_display_medium, FontWeight.Medium),
-    Font(R.font.playfair_display_semibold, FontWeight.SemiBold),
-    Font(R.font.playfair_display_bold, FontWeight.Bold),
-    Font(R.font.playfair_display_black, FontWeight.Black)
+    Font(R.font.playfairdisplayregular, FontWeight.Normal),
+    Font(R.font.playfairdisplaymedium, FontWeight.Medium),
+    Font(R.font.playfairdisplaysemibold, FontWeight.SemiBold),
+    Font(R.font.playfairdisplaybold, FontWeight.Bold),
+    Font(R.font.playfairdisplayblack, FontWeight.Black)
 )
 
 val SourceSans = FontFamily(
-    Font(R.font.source_sans_regular, FontWeight.Normal),
-    Font(R.font.source_sans_medium, FontWeight.Medium),
-    Font(R.font.source_sans_semibold, FontWeight.SemiBold),
-    Font(R.font.source_sans_bold, FontWeight.Bold),
-    Font(R.font.source_sans_black, FontWeight.Black)
+    Font(R.font.sourcesans3regular, FontWeight.Normal),
+    Font(R.font.sourcesans3medium, FontWeight.Medium),
+    Font(R.font.sourcesans3semibold, FontWeight.SemiBold),
+    Font(R.font.sourcesans3bold, FontWeight.Bold),
+    Font(R.font.sourcesans3black, FontWeight.Black)
 )
 
 val Typography = Typography(
@@ -41,6 +40,13 @@ val Typography = Typography(
         lineHeight = 52.sp,
         letterSpacing = 0.sp
     ),
+    displaySmall = TextStyle(
+        fontFamily = PlayfairDisplay,
+        fontWeight = FontWeight.Bold,
+        fontSize = 36.sp,
+        lineHeight = 44.sp,
+        letterSpacing = 0.sp
+    ),
     headlineLarge = TextStyle(
         fontFamily = PlayfairDisplay,
         fontWeight = FontWeight.Bold,
@@ -53,6 +59,13 @@ val Typography = Typography(
         fontWeight = FontWeight.SemiBold,
         fontSize = 28.sp,
         lineHeight = 36.sp,
+        letterSpacing = 0.0.sp
+    ),
+    headlineSmall = TextStyle(
+        fontFamily = PlayfairDisplay,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 24.sp,
+        lineHeight = 32.sp,
         letterSpacing = 0.sp
     ),
     titleLarge = TextStyle(
@@ -69,6 +82,13 @@ val Typography = Typography(
         lineHeight = 24.sp,
         letterSpacing = 0.15.sp
     ),
+    titleSmall = TextStyle(
+        fontFamily = SourceSans,
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.1.sp
+    ),
     bodyLarge = TextStyle(
         fontFamily = SourceSans,
         fontWeight = FontWeight.Normal,
@@ -83,11 +103,32 @@ val Typography = Typography(
         lineHeight = 20.sp,
         letterSpacing = 0.25.sp
     ),
+    bodySmall = TextStyle(
+        fontFamily = SourceSans,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.4.sp
+    ),
     labelLarge = TextStyle(
         fontFamily = SourceSans,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp
+    ),
+    labelMedium = TextStyle(
+        fontFamily = SourceSans,
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.5.sp
+    ),
+    labelSmall = TextStyle(
+        fontFamily = SourceSans,
+        fontWeight = FontWeight.Medium,
+        fontSize = 11.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.5.sp
     )
 )

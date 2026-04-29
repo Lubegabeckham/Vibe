@@ -23,6 +23,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.text.style.TextAlign
@@ -30,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.nedejje.vibe.R
 import com.nedejje.vibe.VibeApplication
 import com.nedejje.vibe.ui.navigation.Screen
 import com.nedejje.vibe.viewmodel.AuthState
@@ -88,7 +91,8 @@ fun SignupScreen(navController: NavController) {
                     center = Offset(200f + 200f * gradientShift, 400f),
                     radius = 1100f
                 )
-            )
+            ),
+        contentAlignment = Alignment.Center // Part B: Centered Layout
     ) {
         // Decorative blobs
         Box(
@@ -101,82 +105,74 @@ fun SignupScreen(navController: NavController) {
                 )
                 .align(Alignment.TopStart)
         )
-        Box(
-            modifier = Modifier
-                .size(180.dp)
-                .offset(x = 80.dp, y = 100.dp)
-                .background(
-                    Brush.radialGradient(listOf(ElectricPlum.copy(alpha = 0.28f), Color.Transparent)),
-                    RoundedCornerShape(50)
-                )
-                .align(Alignment.TopEnd)
-        )
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 48.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(horizontal = dimensionResource(R.dimen.padding_large), vertical = dimensionResource(R.dimen.spacer_large)),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center // Part B: Centered Layout
         ) {
             // Back button
             Box(modifier = Modifier.fillMaxWidth()) {
                 IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = NeonLilac)
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack, 
+                        contentDescription = stringResource(R.string.back), 
+                        tint = NeonLilac
+                    )
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
 
             // Header
-            Text("vibe.", fontSize = 42.sp, fontWeight = FontWeight.Black, color = NeonLilac, letterSpacing = (-1).sp)
-            Spacer(Modifier.height(4.dp))
-            Text("Create your account", fontSize = 17.sp, fontWeight = FontWeight.Light,
-                color = SoftCream.copy(alpha = 0.7f))
-            Spacer(Modifier.height(28.dp))
+            Text(
+                text = stringResource(R.string.vibe_logo_text), 
+                style = MaterialTheme.typography.displayMedium, // Part A: Typography
+                color = NeonLilac
+            )
+            Spacer(Modifier.height(dimensionResource(R.dimen.padding_extra_small)))
+            Text(
+                text = stringResource(R.string.signup_title), 
+                style = MaterialTheme.typography.titleMedium,
+                color = SoftCream.copy(alpha = 0.7f)
+            )
+            Spacer(Modifier.height(dimensionResource(R.dimen.spacer_large)))
 
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp))
+                    .clip(RoundedCornerShape(dimensionResource(R.dimen.padding_large)))
                     .background(CardSurface.copy(alpha = 0.88f))
-                    .padding(horizontal = 24.dp, vertical = 28.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                    .padding(horizontal = dimensionResource(R.dimen.padding_large), vertical = dimensionResource(R.dimen.spacer_large)),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_medium))
             ) {
                 // Name
                 OutlinedTextField(
                     value = name, onValueChange = { name = it },
-                    label = { Text("Full Name") },
+                    label = { Text(stringResource(R.string.full_name_label)) },
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = { Icon(Icons.Default.Person, null, tint = MutedLavender) },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                     singleLine = true,
-                    colors = signupFieldColors()
+                    colors = signupFieldColors(),
+                    shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
                 )
 
                 // Email
                 OutlinedTextField(
                     value = email, onValueChange = { email = it },
-                    label = { Text("Email") },
+                    label = { Text(stringResource(R.string.email_label)) },
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = { Icon(Icons.Default.Email, null, tint = MutedLavender) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                     singleLine = true,
-                    colors = signupFieldColors()
-                )
-
-                // Phone
-                OutlinedTextField(
-                    value = phone, onValueChange = { phone = it },
-                    label = { Text("Phone (optional)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    leadingIcon = { Icon(Icons.Default.Phone, null, tint = MutedLavender) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
-                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
-                    singleLine = true,
-                    colors = signupFieldColors()
+                    colors = signupFieldColors(),
+                    shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
                 )
 
                 // Role selector
@@ -194,7 +190,8 @@ fun SignupScreen(navController: NavController) {
                             )
                         },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = roleExpanded) },
-                        colors = signupFieldColors()
+                        colors = signupFieldColors(),
+                        shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
                     )
                     ExposedDropdownMenu(
                         expanded = roleExpanded,
@@ -214,31 +211,10 @@ fun SignupScreen(navController: NavController) {
                     }
                 }
 
-                // Role badge
-                AnimatedVisibility(visible = selectedRole == "Host") {
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = GoldAccent.copy(alpha = 0.12f),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(Icons.Default.Star, null, tint = GoldAccent, modifier = Modifier.size(16.dp))
-                            Text(
-                                "You'll have access to the Event Manager Dashboard",
-                                fontSize = 12.sp, color = GoldAccent
-                            )
-                        }
-                    }
-                }
-
                 // Password
                 OutlinedTextField(
                     value = password, onValueChange = { password = it },
-                    label = { Text("Password") },
+                    label = { Text(stringResource(R.string.password_label)) },
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = { Icon(Icons.Default.Lock, null, tint = MutedLavender) },
                     trailingIcon = {
@@ -253,14 +229,15 @@ fun SignupScreen(navController: NavController) {
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                     singleLine = true,
-                    colors = signupFieldColors()
+                    colors = signupFieldColors(),
+                    shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
                 )
 
                 // Error
-                AnimatedVisibility(visible = authState is AuthState.Error, enter = fadeIn() + slideInVertically(), exit = fadeOut()) {
+                AnimatedVisibility(visible = authState is AuthState.Error) {
                     val msg = (authState as? AuthState.Error)?.message ?: ""
-                    Surface(color = ErrorRose.copy(alpha = 0.12f), shape = RoundedCornerShape(10.dp), modifier = Modifier.fillMaxWidth()) {
-                        Text(msg, color = ErrorRose, fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(10.dp))
+                    Surface(color = ErrorRose.copy(alpha = 0.12f), shape = RoundedCornerShape(dimensionResource(R.dimen.padding_small)), modifier = Modifier.fillMaxWidth()) {
+                        Text(msg, color = ErrorRose, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center, modifier = Modifier.padding(dimensionResource(R.dimen.padding_small)))
                     }
                 }
 
@@ -276,28 +253,24 @@ fun SignupScreen(navController: NavController) {
                             isAdmin  = selectedRole == "Host"
                         )
                     },
-                    enabled = name.isNotBlank() && email.isNotBlank() && password.isNotBlank()
-                            && authState !is AuthState.Loading,
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = ElectricPlum,
-                        disabledContainerColor = ElectricPlum.copy(alpha = 0.4f)
-                    )
+                    enabled = name.isNotBlank() && email.isNotBlank() && password.isNotBlank() && authState !is AuthState.Loading,
+                    modifier = Modifier.fillMaxWidth().height(dimensionResource(R.dimen.button_height)),
+                    shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius)),
+                    colors = ButtonDefaults.buttonColors(containerColor = ElectricPlum, disabledContainerColor = ElectricPlum.copy(alpha = 0.4f))
                 ) {
                     if (authState is AuthState.Loading) {
-                        CircularProgressIndicator(modifier = Modifier.size(22.dp), color = SoftCream, strokeWidth = 2.5.dp)
+                        CircularProgressIndicator(modifier = Modifier.size(dimensionResource(R.dimen.icon_size_medium)), color = SoftCream, strokeWidth = 2.dp)
                     } else {
-                        Text("Create Account", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = SoftCream)
+                        Text(stringResource(R.string.create_account_button), style = MaterialTheme.typography.titleMedium, color = SoftCream)
                     }
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(dimensionResource(R.dimen.padding_large)))
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                Text("Already have an account?", color = SoftCream.copy(alpha = 0.7f), fontSize = 14.sp)
+                Text(stringResource(R.string.already_have_account_text), color = SoftCream.copy(alpha = 0.7f), style = MaterialTheme.typography.bodyMedium)
                 TextButton(onClick = { navController.popBackStack() }) {
-                    Text("Log in", color = NeonLilac, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(stringResource(R.string.login_button), color = NeonLilac, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
                 }
             }
         }

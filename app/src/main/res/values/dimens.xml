@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Padding -->
+    <dimen name="padding_tiny">2.dp</dimen>
     <dimen name="padding_extra_small">4.dp</dimen>
     <dimen name="padding_small">8.dp</dimen>
     <dimen name="padding_medium">16.dp</dimen>
@@ -8,6 +9,7 @@
     <dimen name="padding_extra_large">32.dp</dimen>
 
     <!-- Spacers -->
+    <dimen name="spacer_tiny">4.dp</dimen>
     <dimen name="spacer_small">8.dp</dimen>
     <dimen name="spacer_medium">16.dp</dimen>
     <dimen name="spacer_large">32.dp</dimen>
@@ -15,14 +17,35 @@
 
     <!-- Components -->
     <dimen name="card_elevation">4.dp</dimen>
+    <dimen name="card_corner_radius_small">12.dp</dimen>
     <dimen name="card_corner_radius">24.dp</dimen>
+    <dimen name="card_corner_radius_large">32.dp</dimen>
+    <dimen name="card_corner_radius_huge">40.dp</dimen>
     <dimen name="button_height">54.dp</dimen>
     <dimen name="button_corner_radius">16.dp</dimen>
+    <dimen name="chip_corner_radius">20.dp</dimen>
 
     <!-- Icons & Images -->
+    <dimen name="icon_size_tiny">12.dp</dimen>
+    <dimen name="icon_size_extra_small">14.dp</dimen>
     <dimen name="icon_size_small">16.dp</dimen>
     <dimen name="icon_size_medium">24.dp</dimen>
     <dimen name="icon_size_large">32.dp</dimen>
-    <dimen name="profile_image_size">100.dp</dimen>
+    <dimen name="icon_size_extra_large">48.dp</dimen>
+    <dimen name="icon_size_huge">64.dp</dimen>
+    <dimen name="profile_image_size">88.dp</dimen>
+    <dimen name="profile_image_large">100.dp</dimen>
     <dimen name="qr_code_size">140.dp</dimen>
+    <dimen name="qr_corner_radius">16.dp</dimen>
+    <dimen name="badge_corner_radius">8.dp</dimen>
+
+    <!-- Decorative -->
+    <dimen name="blob_size_large">260.dp</dimen>
+    <dimen name="blob_size_medium">220.dp</dimen>
+    <dimen name="blob_size_small">200.dp</dimen>
+    <dimen name="blob_offset_x_large">120.dp</dimen>
+    <dimen name="blob_offset_y_large">-180.dp</dimen>
+    <dimen name="blob_offset_x_negative">-60.dp</dimen>
+    <dimen name="blob_offset_y_negative">-80.dp</dimen>
+    <dimen name="blur_radius_large">100.dp</dimen>
 </resources>

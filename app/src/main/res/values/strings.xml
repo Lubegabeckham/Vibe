@@ -1,34 +1,102 @@
 <resources>
     <string name="app_name">Vibe</string>
+    <string name="vibe_logo_text">vibe.</string>
+
+    <!-- Auth Screens -->
     <string name="login_title">Login to Vibe</string>
     <string name="signup_title">Join Vibe</string>
     <string name="welcome_back">Welcome back</string>
     <string name="email_label">Email</string>
     <string name="password_label">Password</string>
     <string name="full_name_label">Full Name</string>
-    <string name="login_button">Login</string>
-    <string name="signup_button">Sign Up</string>
+    <string name="login_button">Log in</string>
+    <string name="signup_button">Sign up</string>
     <string name="forgot_password">Forgot password?</string>
     <string name="create_account_button">Create Account</string>
     <string name="no_account_text">Don\'t have an account? Sign up</string>
     <string name="already_have_account_text">Already have an account? Login</string>
     <string name="new_to_vibe">New to Vibe?</string>
-    <string name="discovery_title">Vibe Discovery</string>
+    <string name="or_divider">or</string>
+
+    <!-- Home & Discovery -->
+    <string name="discovery_title">Discover Events</string>
+    <string name="hey_user">Hey, %1$s 👋</string>
+    <string name="search_placeholder">Search events, locations…</string>
+    <string name="clear_filter">Clear filter</string>
+    <string name="events_count">%1$d events</string>
+    <string name="event_count_singular">%1$d event</string>
+    <string name="no_events_found">No events found</string>
+    <string name="no_events_subtitle">Try a different category or search term</string>
+    <string name="free_entry">FREE ENTRY</string>
+
+    <!-- Ticket Purchase -->
+    <string name="book_tickets_title">Book Tickets</string>
+    <string name="select_tier_header">Select Ticket Tier</string>
+    <string name="quantity_label">Quantity</string>
+    <string name="ticket_label">ticket</string>
+    <string name="tickets_label">tickets</string>
+    <string name="max_booking_limit">Max %1$d per booking</string>
+    <string name="confirm_booking_dialog_title">Confirm Booking</string>
+    <string name="pay_book_button">Pay &amp; Book</string>
+    <string name="reserve_free_button">Reserve Free Ticket</string>
+    <string name="booking_confirmed_title">Booking Confirmed!</string>
+    <string name="amount_paid_label">Amount Paid</string>
+    <string name="view_my_tickets_button">View My Tickets</string>
+    <string name="back_to_event_button">Back to Event</string>
+    <string name="event_not_found">Event not found</string>
+    <string name="go_back_button">Go Back</string>
+    <string name="tier_label">Tier</string>
+    <string name="total_label">Total</string>
+    <string name="decrease_quantity">Decrease</string>
+    <string name="increase_quantity">Increase</string>
+    <string name="booking_success_msg_free">Your %1$d %2$s %3$s for\n%4$s are reserved.</string>
+    <string name="booking_success_msg_paid">Your %1$d %2$s %3$s for\n%4$s have been paid for.</string>
+
+    <!-- Ticket View -->
+    <string name="your_ticket">Your Ticket</string>
+    <string name="back">Back</string>
+    <string name="entry_gate_instruction">Show this screen at the entry gate</string>
+    <string name="share_ticket">Share</string>
+    <string name="done_button">Done</string>
+    <string name="add_to_calendar">Add to Calendar</string>
+    <string name="ticket_id_prefix">#</string>
+
+    <!-- Profile & Team -->
+    <string name="profile_title">My Profile</string>
+    <string name="team_title">Project Team</string>
+    <string name="vibe_dev_team">Vibe Development Team</string>
+    <string name="reg_no_prefix">Reg No: %1$s</string>
+    <string name="logout_button">Logout</string>
+    <string name="settings_title">Settings</string>
+
+    <!-- Admin & Others -->
     <string name="admin_dashboard_title">Event Manager Dashboard</string>
     <string name="discover_events_header">Discover Events</string>
     <string name="organizer_tools_header">Organizer Tools</string>
     <string name="manage_events_header">Manage Your Events</string>
-    <string name="settings_title">Settings</string>
-    <string name="profile_title">My Profile</string>
-    <string name="team_title">Project Team</string>
-    <string name="logout_button">Logout</string>
     <string name="book_now_button">Book Now</string>
     <string name="confirm_booking_button">Confirm Booking</string>
     <string name="free_badge">FREE</string>
     <string name="ugx_currency">UGX</string>
     <string name="starting_from">Starting from %1$s %2$s</string>
-    <string name="entry_gate_instruction">Show this screen at the entry gate</string>
-    <string name="share_ticket">Share</string>
-    <string name="done_button">Done</string>
-    <string name="add_to_calendar">Add to Calendar</string>
+
+    <!-- Wrap Report -->
+    <string name="wrap_report_title">Post-Event Wrap Report</string>
+    <string name="financial_summary">Financial Summary</string>
+    <string name="net_profit">Net Profit</string>
+    <string name="net_loss">Net Loss</string>
+    <string name="revenue_label">Revenue</string>
+    <string name="expenses_label">Expenses</string>
+    <string name="attendance_summary">Attendance Summary</string>
+    <string name="total_guests">Total Guests</string>
+    <string name="checked_in">Checked In</string>
+    <string name="show_up_rate">Show-up Rate</string>
+    <string name="expense_breakdown">Expense Breakdown</string>
+    <string name="no_expenses_recorded">No expenses recorded</string>
+    <string name="close_report">Close Report</string>
+    <string name="paid_status">Paid</string>
+
+    <!-- Splash Screen -->
+    <string name="experience_moment">experience the moment</string>
+    <string name="premier_platform">Uganda\'s premier event platform</string>
 </resources>

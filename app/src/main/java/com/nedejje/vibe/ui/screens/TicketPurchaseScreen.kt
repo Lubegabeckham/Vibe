@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -14,6 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -21,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.nedejje.vibe.R
 import com.nedejje.vibe.VibeApplication
 import com.nedejje.vibe.db.EventEntity
 import com.nedejje.vibe.session.SessionManager
@@ -86,16 +90,19 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
             icon = { Icon(Icons.Default.ConfirmationNumber, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-            title = { Text("Confirm Booking") },
+            title = { Text(stringResource(R.string.confirm_booking_dialog_title)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))) {
                     Text(event!!.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                     HorizontalDivider()
-                    ConfirmRow("Tier",     selectedTier.label)
-                    ConfirmRow("Quantity", "$quantity ticket${if (quantity > 1) "s" else ""}")
+                    ConfirmRow(stringResource(R.string.tier_label), selectedTier.label)
                     ConfirmRow(
-                        "Total",
-                        if (selectedTier.isFree) "Free" else "UGX ${formatPrice(totalPrice)}"
+                        stringResource(R.string.quantity_label), 
+                        "$quantity ${if (quantity > 1) stringResource(R.string.tickets_label) else stringResource(R.string.ticket_label)}"
+                    )
+                    ConfirmRow(
+                        stringResource(R.string.total_label),
+                        if (selectedTier.isFree) stringResource(R.string.free_badge) else "${stringResource(R.string.ugx_currency)} ${formatPrice(totalPrice)}"
                     )
                 }
             },
@@ -112,10 +119,10 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
                             showConfirmDialog = false
                         }
                     )
-                }) { Text("Pay & Book") }
+                }) { Text(stringResource(R.string.pay_book_button)) }
             },
             dismissButton = {
-                OutlinedButton(onClick = { showConfirmDialog = false }) { Text("Cancel") }
+                OutlinedButton(onClick = { showConfirmDialog = false }) { Text(stringResource(R.string.back)) }
             }
         )
     }
@@ -133,39 +140,60 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 40.dp),
+                    .padding(horizontal = dimensionResource(R.dimen.padding_large))
+                    .padding(bottom = dimensionResource(R.dimen.spacer_extra_large)),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_medium))
             ) {
                 Text("🎟", style = MaterialTheme.typography.displayMedium)
                 Text(
-                    "Booking Confirmed!",
+                    text = stringResource(R.string.booking_confirmed_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
+                
+                val msg = if (selectedTier?.isFree == true) {
+                    stringResource(
+                        R.string.booking_success_msg_free, 
+                        quantity, 
+                        selectedTier.label, 
+                        if (quantity > 1) stringResource(R.string.tickets_label) else stringResource(R.string.ticket_label),
+                        event?.title ?: ""
+                    )
+                } else {
+                    stringResource(
+                        R.string.booking_success_msg_paid, 
+                        quantity, 
+                        selectedTier?.label ?: "", 
+                        if (quantity > 1) stringResource(R.string.tickets_label) else stringResource(R.string.ticket_label),
+                        event?.title ?: ""
+                    )
+                }
+                
                 Text(
-                    "Your $quantity ${selectedTier?.label ?: ""} ticket${if (quantity > 1) "s" else ""} for\n${event?.title ?: ""} ${if ((selectedTier?.isFree == true)) "are reserved" else "have been paid for"}.",
+                    text = msg,
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                
                 if (selectedTier?.isFree == false) {
                     Card(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
                     ) {
                         Row(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)),
+                            horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_medium)),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(Icons.Default.Receipt, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                             Column {
-                                Text("Amount Paid", style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.amount_paid_label), style = MaterialTheme.typography.labelSmall)
                                 Text(
-                                    "UGX ${formatPrice(totalPrice)}",
+                                    "${stringResource(R.string.ugx_currency)} ${formatPrice(totalPrice)}",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -173,21 +201,23 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_extra_small)))
                 Button(
                     onClick = {
                         bookingConfirmed = false
                         navController.navigate(Screen.Profile.route) { popUpTo(Screen.Home.route) }
                     },
-                    modifier = Modifier.fillMaxWidth()
-                ) { Text("View My Tickets") }
+                    modifier = Modifier.fillMaxWidth().height(dimensionResource(R.dimen.button_height)),
+                    shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
+                ) { Text(stringResource(R.string.view_my_tickets_button)) }
                 OutlinedButton(
                     onClick = {
                         bookingConfirmed = false
                         navController.popBackStack()
                     },
-                    modifier = Modifier.fillMaxWidth()
-                ) { Text("Back to Event") }
+                    modifier = Modifier.fillMaxWidth().height(dimensionResource(R.dimen.button_height)),
+                    shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
+                ) { Text(stringResource(R.string.back_to_event_button)) }
             }
         }
     }
@@ -196,10 +226,10 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Book Tickets") },
+                title = { Text(stringResource(R.string.book_tickets_title), style = MaterialTheme.typography.titleLarge) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -212,12 +242,17 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
                 modifier = Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally, 
+                    verticalArrangement = Arrangement.Center // Part B: Centered Layout
+                ) {
                     Icon(Icons.Default.EventBusy, contentDescription = null,
-                        modifier = Modifier.size(56.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("Event not found", style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.size(dimensionResource(R.dimen.icon_size_extra_large)), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(dimensionResource(R.dimen.padding_medium)))
+                    Text(stringResource(R.string.event_not_found), style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    OutlinedButton(onClick = { navController.popBackStack() }) { Text("Go Back") }
+                    Spacer(Modifier.height(dimensionResource(R.dimen.padding_medium)))
+                    OutlinedButton(onClick = { navController.popBackStack() }) { Text(stringResource(R.string.go_back_button)) }
                 }
             }
             return@Scaffold
@@ -232,20 +267,20 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(dimensionResource(R.dimen.padding_medium)),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_medium))
             ) {
 
                 // ── Event header ───────────────────────────────────────────
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_extra_small))) {
                     Text(event!!.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small)),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (event!!.date.isNotBlank()) {
                             Icon(Icons.Default.CalendarToday, contentDescription = null,
-                                modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                modifier = Modifier.size(dimensionResource(R.dimen.icon_size_extra_small)), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(event!!.date, style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
@@ -253,7 +288,7 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
                             Text("·", style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Icon(Icons.Default.LocationOn, contentDescription = null,
-                                modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                modifier = Modifier.size(dimensionResource(R.dimen.icon_size_extra_small)), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(event!!.location, style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
@@ -263,8 +298,8 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
                 HorizontalDivider()
 
                 // ── Tier selection ─────────────────────────────────────────
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Select Ticket Tier", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))) {
+                    Text(stringResource(R.string.select_tier_header), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     tiers.forEach { tier ->
                         TierCard(
                             tier = tier,
@@ -276,19 +311,19 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
 
                 // ── Quantity selector ──────────────────────────────────────
                 AnimatedVisibility(visible = selectedTier?.isFree == false) {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))) {
                         HorizontalDivider()
-                        Text("Quantity", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.quantity_label), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_medium))
                         ) {
                             FilledIconButton(
                                 onClick = { if (quantity > 1) quantity-- },
                                 enabled = quantity > 1
                             ) {
-                                Icon(Icons.Default.Remove, contentDescription = "Decrease")
+                                Icon(Icons.Default.Remove, contentDescription = stringResource(R.string.decrease_quantity))
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
@@ -296,20 +331,22 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
                                     style = MaterialTheme.typography.headlineMedium,
                                     fontWeight = FontWeight.Bold
                                 )
-                                Text("ticket${if (quantity > 1) "s" else ""}",
+                                Text(
+                                    if (quantity > 1) stringResource(R.string.tickets_label) else stringResource(R.string.ticket_label),
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                             FilledIconButton(
                                 onClick = { if (quantity < maxQuantity) quantity++ },
                                 enabled = quantity < maxQuantity
                             ) {
-                                Icon(Icons.Default.Add, contentDescription = "Increase")
+                                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.increase_quantity))
                             }
                             Spacer(Modifier.weight(1f))
                             if (quantity == maxQuantity) {
                                 Text(
-                                    "Max $maxQuantity per booking",
+                                    stringResource(R.string.max_booking_limit, maxQuantity),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.error
                                 )
@@ -321,14 +358,14 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
 
             // ── Sticky order summary + CTA ─────────────────────────────────
             Surface(
-                shadowElevation = 8.dp,
+                shadowElevation = dimensionResource(R.dimen.card_elevation),
                 tonalElevation = 2.dp
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(dimensionResource(R.dimen.padding_medium)),
+                    verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small) + 4.dp)
                 ) {
                     // Order summary
                     if (selectedTier != null) {
@@ -344,7 +381,7 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    if (selectedTier.isFree) "Free" else "UGX ${formatPrice(totalPrice)}",
+                                    if (selectedTier.isFree) stringResource(R.string.free_badge) else "${stringResource(R.string.ugx_currency)} ${formatPrice(totalPrice)}",
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Bold,
                                     color = if (selectedTier.isFree)
@@ -355,7 +392,7 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
                             }
                             if (!selectedTier.isFree && quantity > 1) {
                                 Text(
-                                    "UGX ${formatPrice(unitPrice)} each",
+                                    "${stringResource(R.string.ugx_currency)} ${formatPrice(unitPrice)} each",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -365,13 +402,14 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
 
                     Button(
                         onClick = { showConfirmDialog = true },
-                        modifier = Modifier.fillMaxWidth(),
-                        contentPadding = PaddingValues(vertical = 14.dp)
+                        modifier = Modifier.fillMaxWidth().height(dimensionResource(R.dimen.button_height)),
+                        shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius)),
+                        contentPadding = PaddingValues(vertical = 0.dp)
                     ) {
-                        Icon(Icons.Default.ConfirmationNumber, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
+                        Icon(Icons.Default.ConfirmationNumber, contentDescription = null, modifier = Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp))
+                        Spacer(Modifier.width(dimensionResource(R.dimen.padding_small)))
                         Text(
-                            if (selectedTier?.isFree == true) "Reserve Free Ticket" else "Confirm Booking",
+                            if (selectedTier?.isFree == true) stringResource(R.string.reserve_free_button) else stringResource(R.string.confirm_booking_button),
                             style = MaterialTheme.typography.labelLarge
                         )
                     }
@@ -389,6 +427,7 @@ private fun TierCard(tier: TicketTier, selected: Boolean, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
+        shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius)),
         border = if (selected)
             BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
         else
@@ -401,8 +440,8 @@ private fun TierCard(tier: TicketTier, selected: Boolean, onClick: () -> Unit) {
         )
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)),
+            horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small) + 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             RadioButton(selected = selected, onClick = onClick)
@@ -412,7 +451,7 @@ private fun TierCard(tier: TicketTier, selected: Boolean, onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Text(
-                text = if (tier.isFree) "FREE" else "UGX ${formatPrice(tier.priceUgx)}",
+                text = if (tier.isFree) stringResource(R.string.free_badge) else "${stringResource(R.string.ugx_currency)} ${formatPrice(tier.priceUgx)}",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color = if (tier.isFree) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary

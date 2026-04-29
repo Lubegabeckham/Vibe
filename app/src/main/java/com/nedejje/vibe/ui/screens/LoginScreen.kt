@@ -23,6 +23,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -33,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.nedejje.vibe.R
 import com.nedejje.vibe.VibeApplication
 import com.nedejje.vibe.ui.navigation.Screen
 import com.nedejje.vibe.viewmodel.AuthViewModel
@@ -66,7 +69,6 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    // Navigate to Home on successful login
     LaunchedEffect(authState) {
         if (authState is AuthState.Success) {
             navController.navigate(Screen.Home.route) {
@@ -75,7 +77,6 @@ fun LoginScreen(
         }
     }
 
-    // Animated gradient background
     val infiniteTransition = rememberInfiniteTransition(label = "bg")
     val gradientShift by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -97,247 +98,140 @@ fun LoginScreen(
                     radius  = 1200f
                 )
             ),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center // Part B: Centered Layout
     ) {
-
-        // Decorative blurred blob top-right
+        // Decorative blurred blobs
         Box(
             modifier = Modifier
                 .size(260.dp)
                 .offset(x = 120.dp, y = (-180).dp)
                 .background(
-                    Brush.radialGradient(
-                        colors = listOf(ElectricPlum.copy(alpha = 0.35f), Color.Transparent)
-                    ),
+                    Brush.radialGradient(colors = listOf(ElectricPlum.copy(alpha = 0.35f), Color.Transparent)),
                     shape = RoundedCornerShape(50)
                 )
                 .align(Alignment.TopEnd)
         )
 
-        // Decorative blurred blob bottom-left
-        Box(
-            modifier = Modifier
-                .size(200.dp)
-                .offset(x = (-80).dp, y = 160.dp)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(NeonLilac.copy(alpha = 0.2f), Color.Transparent)
-                    ),
-                    shape = RoundedCornerShape(50)
-                )
-                .align(Alignment.BottomStart)
-        )
-
-        // ── Card ──────────────────────────────────────────────────────────────
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .clip(RoundedCornerShape(28.dp))
+                .padding(horizontal = dimensionResource(R.dimen.padding_large))
+                .clip(RoundedCornerShape(dimensionResource(R.dimen.padding_large)))
                 .background(CardSurface.copy(alpha = 0.85f))
-                .padding(horizontal = 28.dp, vertical = 36.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(horizontal = dimensionResource(R.dimen.padding_large), vertical = dimensionResource(R.dimen.spacer_large)),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center // Part B: Centered Layout
         ) {
-
-            // ── Brand / Header ────────────────────────────────────────────────
             Text(
                 text  = "vibe.",
-                fontSize   = 42.sp,
-                fontWeight = FontWeight.Black,
-                color = NeonLilac,
-                letterSpacing = (-1).sp
+                style = MaterialTheme.typography.displayMedium, // Part A: Typography
+                color = NeonLilac
             )
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(dimensionResource(R.dimen.padding_extra_small)))
             Text(
-                text  = "Welcome back",
-                fontSize   = 18.sp,
-                fontWeight = FontWeight.Light,
-                color = SoftCream.copy(alpha = 0.75f),
-                letterSpacing = 0.3.sp
+                text  = stringResource(R.string.welcome_back),
+                style = MaterialTheme.typography.titleMedium,
+                color = SoftCream.copy(alpha = 0.75f)
             )
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(dimensionResource(R.dimen.spacer_large)))
 
-            // ── Email Field ───────────────────────────────────────────────────
             OutlinedTextField(
                 value         = email,
                 onValueChange = { email = it },
-                label         = { Text("Email") },
+                label         = { Text(stringResource(R.string.email_label)) },
                 modifier      = Modifier.fillMaxWidth(),
-                leadingIcon   = {
-                    Icon(Icons.Default.Email, contentDescription = null,
-                        tint = MutedLavender)
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
-                    imeAction    = ImeAction.Next
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                ),
+                leadingIcon   = { Icon(Icons.Default.Email, null, tint = MutedLavender) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = SoftCream,
-                    unfocusedTextColor = SoftCream,
-                    focusedLabelColor = NeonLilac,
-                    unfocusedLabelColor = MutedLavender,
-                    focusedBorderColor = NeonLilac,
-                    unfocusedBorderColor = MutedLavender.copy(alpha = 0.4f)
-                )
+                    focusedTextColor = SoftCream, unfocusedTextColor = SoftCream,
+                    focusedLabelColor = NeonLilac, unfocusedLabelColor = MutedLavender,
+                    focusedBorderColor = NeonLilac, unfocusedBorderColor = MutedLavender.copy(alpha = 0.4f)
+                ),
+                shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
             )
 
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(dimensionResource(R.dimen.padding_medium)))
 
-            // ── Password Field ────────────────────────────────────────────────
             OutlinedTextField(
                 value         = password,
                 onValueChange = { password = it },
-                label         = { Text("Password") },
+                label         = { Text(stringResource(R.string.password_label)) },
                 modifier      = Modifier.fillMaxWidth(),
-                leadingIcon   = {
-                    Icon(Icons.Default.Lock, contentDescription = null,
-                        tint = MutedLavender)
-                },
+                leadingIcon   = { Icon(Icons.Default.Lock, null, tint = MutedLavender) },
                 trailingIcon  = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
-                            if (passwordVisible) Icons.Default.VisibilityOff
-                            else Icons.Default.Visibility,
-                            contentDescription = if (passwordVisible) "Hide" else "Show",
+                            if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            contentDescription = null,
                             tint = MutedLavender
                         )
                     }
                 },
-                visualTransformation = if (passwordVisible) VisualTransformation.None
-                else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction    = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        focusManager.clearFocus()
-                        if (email.isNotBlank() && password.isNotBlank())
-                            viewModel.login(email.trim(), password)
-                    }
-                ),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {
+                    focusManager.clearFocus()
+                    if (email.isNotBlank() && password.isNotBlank()) viewModel.login(email.trim(), password)
+                }),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = SoftCream,
-                    unfocusedTextColor = SoftCream,
-                    focusedLabelColor = NeonLilac,
-                    unfocusedLabelColor = MutedLavender,
-                    focusedBorderColor = NeonLilac,
-                    unfocusedBorderColor = MutedLavender.copy(alpha = 0.4f)
-                )
+                    focusedTextColor = SoftCream, unfocusedTextColor = SoftCream,
+                    focusedLabelColor = NeonLilac, unfocusedLabelColor = MutedLavender,
+                    focusedBorderColor = NeonLilac, unfocusedBorderColor = MutedLavender.copy(alpha = 0.4f)
+                ),
+                shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
             )
 
-            // ── Forgot Password ───────────────────────────────────────────────
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
                 TextButton(onClick = { viewModel.sendPasswordReset(email.trim()) }) {
-                    Text(
-                        "Forgot password?",
-                        color  = MutedLavender,
-                        fontSize = 12.sp
-                    )
+                    Text(stringResource(R.string.forgot_password), color = MutedLavender, style = MaterialTheme.typography.labelSmall)
                 }
             }
 
-            // ── Error Banner ──────────────────────────────────────────────────
-            AnimatedVisibility(
-                visible = authState is AuthState.Error,
-                enter   = fadeIn() + slideInVertically(),
-                exit    = fadeOut()
-            ) {
+            AnimatedVisibility(visible = authState is AuthState.Error) {
                 val msg = (authState as? AuthState.Error)?.message ?: ""
                 Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp),
-                    color        = ErrorRose.copy(alpha = 0.12f),
-                    shape        = RoundedCornerShape(12.dp),
-                    tonalElevation = 0.dp
+                    modifier = Modifier.fillMaxWidth().padding(bottom = dimensionResource(R.dimen.padding_small)),
+                    color = ErrorRose.copy(alpha = 0.12f),
+                    shape = RoundedCornerShape(dimensionResource(R.dimen.padding_small))
                 ) {
-                    Text(
-                        text      = msg,
-                        color     = ErrorRose,
-                        fontSize  = 13.sp,
-                        textAlign = TextAlign.Center,
-                        modifier  = Modifier.padding(10.dp)
-                    )
+                    Text(text = msg, color = ErrorRose, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center, modifier = Modifier.padding(dimensionResource(R.dimen.padding_small)))
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
 
-            // ── Login Button ──────────────────────────────────────────────────
             Button(
                 onClick  = {
                     focusManager.clearFocus()
                     viewModel.login(email.trim(), password)
                 },
-                enabled  = email.isNotBlank() && password.isNotBlank()
-                        && authState !is AuthState.Loading,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape    = RoundedCornerShape(14.dp),
-                colors   = ButtonDefaults.buttonColors(
-                    containerColor = ElectricPlum,
-                    disabledContainerColor = ElectricPlum.copy(alpha = 0.4f)
-                )
+                enabled  = email.isNotBlank() && password.isNotBlank() && authState !is AuthState.Loading,
+                modifier = Modifier.fillMaxWidth().height(dimensionResource(R.dimen.button_height)),
+                shape    = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius)),
+                colors   = ButtonDefaults.buttonColors(containerColor = ElectricPlum, disabledContainerColor = ElectricPlum.copy(alpha = 0.4f))
             ) {
                 if (authState is AuthState.Loading) {
-                    CircularProgressIndicator(
-                        modifier  = Modifier.size(22.dp),
-                        color     = SoftCream,
-                        strokeWidth = 2.5.dp
-                    )
+                    CircularProgressIndicator(modifier = Modifier.size(dimensionResource(R.dimen.icon_size_medium)), color = SoftCream, strokeWidth = 2.dp)
                 } else {
-                    Text(
-                        "Log in",
-                        fontSize   = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.5.sp,
-                        color = SoftCream
-                    )
+                    Text(stringResource(R.string.login_button), style = MaterialTheme.typography.titleMedium, color = SoftCream)
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(dimensionResource(R.dimen.padding_large)))
 
-            // ── Divider ───────────────────────────────────────────────────────
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier          = Modifier.fillMaxWidth()
-            ) {
-                HorizontalDivider(modifier = Modifier.weight(1f),
-                    color = SoftCream.copy(alpha = 0.12f))
-                Text(
-                    "  or  ",
-                    color    = SoftCream.copy(alpha = 0.4f),
-                    fontSize = 12.sp
-                )
-                HorizontalDivider(modifier = Modifier.weight(1f),
-                    color = SoftCream.copy(alpha = 0.12f))
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                HorizontalDivider(modifier = Modifier.weight(1f), color = SoftCream.copy(alpha = 0.12f))
+                Text("  or  ", color = SoftCream.copy(alpha = 0.4f), style = MaterialTheme.typography.labelSmall)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = SoftCream.copy(alpha = 0.12f))
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(dimensionResource(R.dimen.padding_large)))
 
-            // ── Sign Up Link ──────────────────────────────────────────────────
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment     = Alignment.CenterVertically
-            ) {
-                Text(
-                    "New to Vibe?",
-                    color = SoftCream.copy(alpha = 0.7f),
-                    fontSize = 14.sp
-                )
+            Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.new_to_vibe), color = SoftCream.copy(alpha = 0.7f), style = MaterialTheme.typography.bodyMedium)
                 TextButton(onClick = { navController.navigate(Screen.Signup.route) }) {
-                    Text(
-                        "Sign up",
-                        color = NeonLilac,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
-                    )
+                    Text(stringResource(R.string.signup_button), color = NeonLilac, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
                 }
             }
         }

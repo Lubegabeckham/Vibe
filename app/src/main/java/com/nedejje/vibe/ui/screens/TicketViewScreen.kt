@@ -5,6 +5,7 @@ import android.provider.CalendarContract
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -23,8 +24,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -37,6 +41,7 @@ import com.nedejje.vibe.VibeApplication
 import com.nedejje.vibe.db.EventEntity
 import com.nedejje.vibe.db.TicketEntity
 import com.nedejje.vibe.session.SessionManager
+import com.nedejje.vibe.ui.util.eventImageName
 import com.nedejje.vibe.viewmodel.TicketViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -99,10 +104,21 @@ fun TicketViewScreen(navController: NavController, ticketId: String?) {
             containerColor = Color.Transparent,
             topBar = {
                 TopAppBar(
-                    title = { Text("Your Ticket", fontWeight = FontWeight.Bold, color = VibeSoftCream) },
+                    title = { 
+                        Text(
+                            text = stringResource(R.string.your_ticket), 
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold, 
+                            color = VibeSoftCream
+                        ) 
+                    },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = VibeNeonLilac)
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack, 
+                                contentDescription = stringResource(R.string.back), 
+                                tint = VibeNeonLilac
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -168,7 +184,7 @@ private fun TicketViewContent(
                 vertical = dimensionResource(R.dimen.padding_medium)
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center // Part B: Centered Layout
+        verticalArrangement = Arrangement.Center
     ) {
         AnimatedVisibility(
             visible = visible,
@@ -180,7 +196,10 @@ private fun TicketViewContent(
         Spacer(Modifier.height(dimensionResource(R.dimen.spacer_large)))
 
         AnimatedVisibility(visible = visible, enter = fadeIn(tween(800, delayMillis = 300))) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically, 
+                horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
+            ) {
                 Icon(
                     Icons.Default.Info, 
                     null, 
@@ -188,7 +207,7 @@ private fun TicketViewContent(
                     tint = VibeSoftCream.copy(alpha = 0.5f)
                 )
                 Text(
-                    "Show this screen at the entry gate", 
+                    text = stringResource(R.string.entry_gate_instruction), 
                     style = MaterialTheme.typography.bodySmall, 
                     color = VibeSoftCream.copy(alpha = 0.5f)
                 )
@@ -204,36 +223,37 @@ private fun TicketViewContent(
             ) {
                 OutlinedButton(
                     onClick = onShare,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(dimensionResource(R.dimen.button_height)),
+                    modifier = Modifier.weight(1f).height(dimensionResource(R.dimen.button_height)),
                     shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius)),
                     border = androidx.compose.foundation.BorderStroke(1.dp, VibeNeonLilac.copy(alpha = 0.4f))
                 ) {
-                    Icon(Icons.Default.Share, null, Modifier.size(18.dp), tint = VibeNeonLilac)
-                    Spacer(Modifier.width(dimensionResource(R.dimen.spacer_small)))
-                    Text("Share", color = VibeNeonLilac)
+                    Icon(
+                        Icons.Default.Share, 
+                        null, 
+                        Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp), 
+                        tint = VibeNeonLilac
+                    )
+                    Spacer(Modifier.width(dimensionResource(R.dimen.padding_small)))
+                    Text(text = stringResource(R.string.share_ticket), color = VibeNeonLilac)
                 }
 
                 Button(
                     onClick = onDone,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(dimensionResource(R.dimen.button_height)),
+                    modifier = Modifier.weight(1f).height(dimensionResource(R.dimen.button_height)),
                     shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius)),
                     colors = ButtonDefaults.buttonColors(containerColor = VibeElectricPlum)
                 ) {
-                    Text("Done", fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(R.string.done_button), fontWeight = FontWeight.Bold)
                 }
             }
         }
         
-        Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
+        Spacer(Modifier.height(dimensionResource(R.dimen.padding_small) + 4.dp))
         
         TextButton(onClick = onAddToCalendar, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Default.CalendarToday, null, Modifier.size(dimensionResource(R.dimen.icon_size_small)))
-            Spacer(Modifier.width(dimensionResource(R.dimen.spacer_small)))
-            Text("Add to Calendar", style = MaterialTheme.typography.labelLarge)
+            Spacer(Modifier.width(dimensionResource(R.dimen.padding_small)))
+            Text(text = stringResource(R.string.add_to_calendar), style = MaterialTheme.typography.labelLarge)
         }
     }
 }
@@ -246,6 +266,13 @@ private fun PremiumTicketCard(
     tierBg: Color,
     issuedAt: String
 ) {
+    val context = LocalContext.current
+    val imageResId: Int? = remember(event.title) {
+        eventImageName(event.title)
+            ?.let { name -> context.resources.getIdentifier(name, "drawable", context.packageName) }
+            ?.takeIf { it != 0 }
+    }
+
     val isVip = ticket.tier.uppercase() in listOf("VIP", "VVIP")
     val transition = rememberInfiniteTransition(label = "glow")
     val glowAlpha by transition.animateFloat(
@@ -258,7 +285,7 @@ private fun PremiumTicketCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(dimensionResource(R.dimen.padding_extra_large)))
+            .clip(RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius_large)))
             .background(borderColor)
             .padding(2.dp)
     ) {
@@ -273,18 +300,44 @@ private fun PremiumTicketCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(dimensionResource(R.dimen.qr_code_size))
-                    .background(Brush.linearGradient(listOf(tierFg.copy(alpha = 0.8f), VibeElectricPlum)))
-                    .padding(dimensionResource(R.dimen.padding_large)),
-                contentAlignment = Alignment.BottomStart
             ) {
-                Column {
+                // Background
+                if (imageResId != null) {
+                    Image(
+                        painter = painterResource(id = imageResId),
+                        contentDescription = event.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f))))
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Brush.linearGradient(listOf(tierFg.copy(alpha = 0.8f), VibeElectricPlum)))
+                    )
+                }
+
+                // Foreground Header Content
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(dimensionResource(R.dimen.padding_large))
+                ) {
                     Surface(
                         shape = RoundedCornerShape(dimensionResource(R.dimen.padding_small)), 
                         color = Color.White.copy(alpha = 0.2f)
                     ) {
                         Text(
-                            ticket.tier.uppercase(),
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = dimensionResource(R.dimen.padding_extra_small)),
+                            text = ticket.tier.uppercase(),
+                            modifier = Modifier.padding(
+                                horizontal = 10.dp, 
+                                vertical = dimensionResource(R.dimen.padding_extra_small)
+                            ),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Black,
                             color = Color.White,
@@ -293,7 +346,7 @@ private fun PremiumTicketCard(
                     }
                     Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
                     Text(
-                        event.title,
+                        text = event.title,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Black,
                         color = Color.White,
@@ -302,8 +355,11 @@ private fun PremiumTicketCard(
                     )
                 }
                 Text(
-                    "vibe.",
-                    modifier = Modifier.align(Alignment.TopEnd),
+                    text = stringResource(R.string.vibe_logo_text),
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(dimensionResource(R.dimen.padding_large)),
+                    style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Black,
                     color = Color.White.copy(alpha = 0.3f)
                 )
@@ -312,7 +368,7 @@ private fun PremiumTicketCard(
             // Body
             Column(
                 modifier = Modifier.padding(dimensionResource(R.dimen.padding_large)), 
-                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_medium))
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     TicketDetailItem("DATE", event.date, Icons.Default.CalendarToday, tierFg)
@@ -324,7 +380,12 @@ private fun PremiumTicketCard(
                     TicketDetailItem("ISSUED", issuedAt, Icons.Default.Schedule, tierFg)
                     if (!event.isFree) {
                         val price = if (ticket.tier.uppercase() == "VVIP") event.priceVVIP else if (ticket.tier.uppercase() == "VIP") event.priceVIP else event.priceOrdinary
-                        TicketDetailItem("PAID", "UGX ${String.format(Locale.getDefault(), "%,d", price)}", Icons.Default.CreditCard, VibeGoldAccent)
+                        TicketDetailItem(
+                            "PAID", 
+                            "${stringResource(R.string.ugx_currency)} ${String.format(Locale.getDefault(), "%,d", price)}", 
+                            Icons.Default.CreditCard, 
+                            VibeGoldAccent
+                        )
                     }
                 }
 
@@ -342,16 +403,21 @@ private fun PremiumTicketCard(
                     Box(
                         modifier = Modifier
                             .size(dimensionResource(R.dimen.qr_code_size))
-                            .clip(RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius)))
+                            .clip(RoundedCornerShape(dimensionResource(R.dimen.qr_corner_radius)))
                             .background(Color.White)
                             .padding(dimensionResource(R.dimen.padding_medium)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.QrCode2, null, Modifier.fillMaxSize(), tint = VibeMidnightBlue)
+                        Icon(
+                            Icons.Default.QrCode2, 
+                            null, 
+                            Modifier.fillMaxSize(), 
+                            tint = VibeMidnightBlue
+                        )
                     }
-                    Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
+                    Spacer(Modifier.height(dimensionResource(R.dimen.padding_medium)))
                     Text(
-                        "#${ticket.id.take(8).uppercase()}",
+                        text = "${stringResource(R.string.ticket_id_prefix)}${ticket.id.take(8).uppercase()}",
                         style = MaterialTheme.typography.labelMedium,
                         color = VibeSoftCream.copy(alpha = 0.4f),
                         letterSpacing = 4.sp
@@ -366,16 +432,35 @@ private fun PremiumTicketCard(
 private fun TicketDetailItem(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector, tint: Color) {
     Column {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Icon(icon, null, Modifier.size(12.dp), tint = tint.copy(alpha = 0.6f))
-            Text(label, style = MaterialTheme.typography.labelSmall, color = VibeSoftCream.copy(alpha = 0.4f), letterSpacing = 1.sp)
+            Icon(
+                icon, 
+                null, 
+                Modifier.size(dimensionResource(R.dimen.icon_size_extra_small)), 
+                tint = tint.copy(alpha = 0.6f)
+            )
+            Text(
+                text = label, 
+                style = MaterialTheme.typography.labelSmall, 
+                color = VibeSoftCream.copy(alpha = 0.4f), 
+                letterSpacing = 1.sp
+            )
         }
-        Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = VibeSoftCream)
+        Text(
+            text = value, 
+            style = MaterialTheme.typography.bodyMedium, 
+            fontWeight = FontWeight.Bold, 
+            color = VibeSoftCream
+        )
     }
 }
 
 @Composable
 private fun AmbientGlow(color: Color, offset: Offset) {
     Canvas(Modifier.fillMaxSize().blur(100.dp)) {
-        drawCircle(color, radius = size.minDimension * 0.4f, center = Offset(size.width * offset.x, size.height * offset.y))
+        drawCircle(
+            color, 
+            radius = size.minDimension * 0.4f, 
+            center = Offset(size.width * offset.x, size.height * offset.y)
+        )
     }
 }
