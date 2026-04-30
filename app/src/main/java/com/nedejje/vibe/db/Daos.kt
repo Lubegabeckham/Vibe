@@ -81,6 +81,9 @@ interface GuestDao {
     suspend fun delete(guest: GuestEntity)
 }
 
+// Projection for per-tier aggregation used in WrapReport charts
+data class TierBreakdown(val tier: String, val revenue: Long, val count: Int)
+
 @Dao
 interface TicketDao {
     @Query("SELECT * FROM tickets WHERE userId = :userId")
@@ -97,6 +100,10 @@ interface TicketDao {
 
     @Query("SELECT SUM(price * quantity) FROM tickets WHERE eventId = :eventId AND status = 'PAID'")
     fun revenueByEvent(eventId: String): Flow<Long?>
+
+    // Per-tier breakdown for WrapReport charts
+    @Query("SELECT tier, SUM(price * quantity) as revenue, COUNT(*) as count FROM tickets WHERE eventId = :eventId AND status = 'PAID' GROUP BY tier")
+    fun tierBreakdownByEvent(eventId: String): Flow<List<TierBreakdown>>
 
     @Query("UPDATE tickets SET isUsed = :isUsed WHERE id = :id")
     suspend fun updateUsage(id: String, isUsed: Boolean)

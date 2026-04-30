@@ -49,10 +49,10 @@ fun QrScannerScreen(navController: NavController) {
     val context = LocalContext.current
     val app = context.applicationContext as VibeApplication
     val scope = rememberCoroutineScope()
-    
+
     val viewModel: TicketViewModel = viewModel(
         factory = TicketViewModel.Factory(
-            app.container.ticketRepository, 
+            app.container.ticketRepository,
             app.container.eventRepository,
             app.container.guestRepository
         )
@@ -98,7 +98,9 @@ fun QrScannerScreen(navController: NavController) {
                         if (!isVerifying && scannedTicket == null && errorMessage == null) {
                             scope.launch {
                                 isVerifying = true
-                                val ticket = app.container.ticketRepository.getById(barcode)
+                                // QR format: "ticketId|eventId|tier" — extract just the ticketId
+                                val ticketId = barcode.split("|").firstOrNull()?.trim() ?: barcode
+                                val ticket = app.container.ticketRepository.getById(ticketId)
                                 if (ticket != null) {
                                     if (ticket.isUsed) {
                                         errorMessage = "This ticket has already been used!"
@@ -113,7 +115,7 @@ fun QrScannerScreen(navController: NavController) {
                         }
                     }
                 )
-                
+
                 // Scanner Overlay
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -169,19 +171,19 @@ fun QrScannerScreen(navController: NavController) {
                             ) { Text("Try Again") }
                         } else if (scannedTicket != null) {
                             val isPending = scannedTicket!!.status == "PENDING"
-                            
+
                             Icon(
-                                imageVector = if (isPending) Icons.Default.Warning else Icons.Default.CheckCircle, 
-                                null, Modifier.size(64.dp), 
+                                imageVector = if (isPending) Icons.Default.Warning else Icons.Default.CheckCircle,
+                                null, Modifier.size(64.dp),
                                 tint = if (isPending) Color(0xFFFFA000) else Color(0xFF4CAF50)
                             )
-                            
+
                             Text(
-                                text = if (isPending) "Payment Pending" else "Ticket Verified", 
-                                style = MaterialTheme.typography.headlineSmall, 
+                                text = if (isPending) "Payment Pending" else "Ticket Verified",
+                                style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold
                             )
-                            
+
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -225,7 +227,7 @@ fun QrScannerScreen(navController: NavController) {
                                     Text("Mark as Attended", fontWeight = FontWeight.Bold)
                                 }
                             }
-                            
+
                             TextButton(onClick = { scannedTicket = null }) {
                                 Text("Cancel")
                             }

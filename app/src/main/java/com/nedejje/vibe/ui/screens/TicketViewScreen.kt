@@ -1,6 +1,7 @@
 package com.nedejje.vibe.ui.screens
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.provider.CalendarContract
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -24,6 +25,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
@@ -36,6 +38,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.EncodeHintType
+import com.google.zxing.qrcode.QRCodeWriter
 import com.nedejje.vibe.R
 import com.nedejje.vibe.VibeApplication
 import com.nedejje.vibe.db.EventEntity
@@ -62,6 +67,22 @@ private fun getTierColors(tier: String): Pair<Color, Color> = when (tier.upperca
     "VIP"  -> Pair(VibeNeonLilac,  VibeDeepViolet)
     "FREE" -> Pair(VibeTealAccent, Color(0xFF002620))
     else   -> Pair(VibeElectricPlum, VibeDeepViolet)
+}
+
+// ── QR generation (ZXing — already on classpath via ML Kit) ───────────────────
+private fun generateQrBitmap(content: String, sizePx: Int = 512): Bitmap {
+    val hints = mapOf<EncodeHintType, Any>(
+        EncodeHintType.MARGIN to 1,
+        EncodeHintType.ERROR_CORRECTION to "H"
+    )
+    val matrix = QRCodeWriter().encode(content, BarcodeFormat.QR_CODE, sizePx, sizePx, hints)
+    val bmp = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.RGB_565)
+    for (x in 0 until sizePx) {
+        for (y in 0 until sizePx) {
+            bmp.setPixel(x, y, if (matrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
+        }
+    }
+    return bmp
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -396,6 +417,9 @@ private fun PremiumTicketCard(
                 }
 
                 Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    // Encode: ticketId|eventId|tier so the scanner gets structured data
+                    val qrContent = "${ticket.id}|${event.id}|${ticket.tier}"
+                    val qrBitmap  = remember(qrContent) { generateQrBitmap(qrContent) }
                     Box(
                         modifier = Modifier
                             .size(dimensionResource(R.dimen.qr_code_size))
@@ -404,11 +428,10 @@ private fun PremiumTicketCard(
                             .padding(dimensionResource(R.dimen.padding_medium)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            Icons.Default.QrCode2,
-                            null,
-                            Modifier.fillMaxSize(),
-                            tint = VibeMidnightBlue
+                        androidx.compose.foundation.Image(
+                            bitmap = qrBitmap.asImageBitmap(),
+                            contentDescription = "Ticket QR code",
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                     Spacer(Modifier.height(dimensionResource(R.dimen.padding_medium)))

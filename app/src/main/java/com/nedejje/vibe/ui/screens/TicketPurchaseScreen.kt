@@ -4,6 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -74,7 +75,7 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
     val app = context.applicationContext as VibeApplication
     val viewModel: TicketViewModel = viewModel(
         factory = TicketViewModel.Factory(
-            app.container.ticketRepository, 
+            app.container.ticketRepository,
             app.container.eventRepository,
             app.container.guestRepository
         )
@@ -92,7 +93,7 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
     var quantity by remember { mutableIntStateOf(1) }
     var showPaymentSheet by remember { mutableStateOf(false) }
     var bookingConfirmed by remember { mutableStateOf(false) }
-    
+
     // Payment State
     var selectedPaymentMethod by remember { mutableStateOf(PaymentMethod.MTN) }
     var phoneNumber by remember { mutableStateOf("") }
@@ -115,9 +116,12 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text("Select Payment Method", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                
-                // Methods
-                FlowRow(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+
+                // Methods - Changed from FlowRow to Row with horizontalScroll to fix NoSuchMethodError crash
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     PaymentMethod.entries.forEach { method ->
                         PaymentMethodChip(method, selectedPaymentMethod == method) { selectedPaymentMethod = it }
                     }
@@ -165,10 +169,15 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
                 Button(
                     onClick = {
                         isProcessing = true
+                        val userId = SessionManager.userId
+                        if (userId.isBlank()) {
+                            isProcessing = false
+                            return@Button
+                        }
                         val status = if (selectedPaymentMethod == PaymentMethod.LATER) "PENDING" else "PAID"
                         viewModel.purchase(
                             eventId = event!!.id,
-                            userId = SessionManager.userId,
+                            userId = userId,
                             tier = selectedTier.label,
                             price = unitPrice,
                             quantity = quantity,
@@ -224,14 +233,14 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = if (isPending) 
-                        "Your ticket for ${event?.title} is reserved. Please complete payment at the venue to activate your ticket." 
-                        else "Your ticket for ${event?.title} is ready. You'll need to show your QR code at the entrance.",
+                    text = if (isPending)
+                        "Your ticket for ${event?.title} is reserved. Please complete payment at the venue to activate your ticket."
+                    else "Your ticket for ${event?.title} is ready. You'll need to show your QR code at the entrance.",
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                
+
                 Button(
                     onClick = {
                         bookingConfirmed = false
@@ -322,8 +331,10 @@ fun TicketPurchaseScreen(navController: NavController, eventId: String?) {
                         }
                         Button(
                             onClick = {
+                                val userId = SessionManager.userId
+                                if (userId.isBlank()) return@Button   // not logged in — shouldn't happen
                                 if (selectedTier?.isFree == true) {
-                                    viewModel.purchase(event!!.id, SessionManager.userId, selectedTier.label, 0, quantity) {
+                                    viewModel.purchase(event!!.id, userId, selectedTier.label, 0, quantity) {
                                         bookingConfirmed = true
                                     }
                                 } else {

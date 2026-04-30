@@ -10,7 +10,15 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.security.MessageDigest
 import java.util.UUID
+
+// ── Password hashing ───────────────────────────────────────────────────────────
+private fun hashPassword(password: String): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    val bytes  = digest.digest(password.toByteArray(Charsets.UTF_8))
+    return bytes.joinToString("") { "%02x".format(it) }
+}
 
 // ── AuthState ──────────────────────────────────────────────────────────────────
 sealed class AuthState {
@@ -31,7 +39,7 @@ class AuthViewModel(private val userRepo: UserRepository) : ViewModel() {
             _authState.value = AuthState.Loading
             delay(500)
             val user = userRepo.getByEmail(email)
-            if (user != null && user.passwordHash == password) {
+            if (user != null && user.passwordHash == hashPassword(password)) {
                 SessionManager.login(user)
                 _authState.value = AuthState.Success(user)
             } else {
@@ -49,7 +57,7 @@ class AuthViewModel(private val userRepo: UserRepository) : ViewModel() {
                 email        = email.trim(),
                 phone        = phone.trim(),
                 isAdmin      = isAdmin,
-                passwordHash = password 
+                passwordHash = hashPassword(password)
             )
             userRepo.insert(newUser)
             SessionManager.login(newUser)
@@ -218,7 +226,7 @@ class TicketViewModel(
     ) {
         viewModelScope.launch {
             val ticketId = ticketRepo.purchaseTicket(eventId, userId, tier, price, quantity, status)
-            
+
             // Automatically add user to guest list for this event
             val user = SessionManager.currentUser.value
             if (user != null) {
@@ -232,13 +240,13 @@ class TicketViewModel(
                     userId = userId
                 )
             }
-            
+
             onDone(ticketId)
         }
     }
 
-    fun markUsed(ticketId: String) { 
-        viewModelScope.launch { 
+    fun markUsed(ticketId: String) {
+        viewModelScope.launch {
             ticketRepo.markAsUsed(ticketId)
             // Also update guest status if linked
             val ticket = ticketRepo.getById(ticketId)
@@ -247,9 +255,9 @@ class TicketViewModel(
                     guestRepo.checkIn(guest.id)
                 }
             }
-        } 
+        }
     }
-    
+
     fun updateStatus(ticketId: String, status: String) {
         viewModelScope.launch { ticketRepo.updateStatus(ticketId, status) }
     }
@@ -272,20 +280,20 @@ class GuestManagerViewModel(private val repo: GuestRepository) : ViewModel() {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val guests: StateFlow<List<GuestEntity>> = combine(_eventId, _searchQuery) { id, q -> id to q }
-            .debounce(300).flatMapLatest { (eventId, q) ->
-                when {
-                    eventId.isBlank() -> flowOf(emptyList())
-                    q.isBlank()       -> repo.observeByEvent(eventId)
-                    else              -> repo.searchInEvent(eventId, q)
-                }
-            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+        .debounce(300).flatMapLatest { (eventId, q) ->
+            when {
+                eventId.isBlank() -> flowOf(emptyList())
+                q.isBlank()       -> repo.observeByEvent(eventId)
+                else              -> repo.searchInEvent(eventId, q)
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
-    val guestCount: StateFlow<Int> = _eventId.flatMapLatest { id -> 
-        if (id.isBlank()) flowOf(0) else repo.countByEvent(id) 
+    val guestCount: StateFlow<Int> = _eventId.flatMapLatest { id ->
+        if (id.isBlank()) flowOf(0) else repo.countByEvent(id)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), 0)
 
-    val checkedInCount: StateFlow<Int> = _eventId.flatMapLatest { id -> 
-        if (id.isBlank()) flowOf(0) else repo.countCheckedIn(id) 
+    val checkedInCount: StateFlow<Int> = _eventId.flatMapLatest { id ->
+        if (id.isBlank()) flowOf(0) else repo.countCheckedIn(id)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), 0)
 
     fun setEventId(eventId: String) { _eventId.value = eventId }
@@ -358,7 +366,7 @@ class WrapReportViewModel(
     private val ticketRepo: TicketRepository
 ) : ViewModel() {
     private val _eventId = MutableStateFlow("")
-    
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val event: StateFlow<EventEntity?> = _eventId.flatMapLatest { id ->
         if (id.isBlank()) flowOf<EventEntity?>(null)
@@ -366,13 +374,13 @@ class WrapReportViewModel(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), null)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val guestCount: StateFlow<Int> = _eventId.flatMapLatest { id -> 
-        if (id.isBlank()) flowOf(0) else guestRepo.countByEvent(id) 
+    val guestCount: StateFlow<Int> = _eventId.flatMapLatest { id ->
+        if (id.isBlank()) flowOf(0) else guestRepo.countByEvent(id)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), 0)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val checkedInCount: StateFlow<Int> = _eventId.flatMapLatest { id -> 
-        if (id.isBlank()) flowOf(0) else guestRepo.countCheckedIn(id) 
+    val checkedInCount: StateFlow<Int> = _eventId.flatMapLatest { id ->
+        if (id.isBlank()) flowOf(0) else guestRepo.countCheckedIn(id)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), 0)
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -381,13 +389,18 @@ class WrapReportViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), 0.0)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val ticketRevenue: StateFlow<Long> = _eventId.flatMapLatest { id -> 
-        if (id.isBlank()) flowOf(0L) else ticketRepo.revenueByEvent(id).map { it ?: 0L } 
+    val ticketRevenue: StateFlow<Long> = _eventId.flatMapLatest { id ->
+        if (id.isBlank()) flowOf(0L) else ticketRepo.revenueByEvent(id).map { it ?: 0L }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), 0L)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val budgetItems: StateFlow<List<BudgetItemEntity>> = _eventId.flatMapLatest { id -> 
-        if (id.isBlank()) flowOf(emptyList<BudgetItemEntity>()) else budgetRepo.observeByEvent(id) 
+    val budgetItems: StateFlow<List<BudgetItemEntity>> = _eventId.flatMapLatest { id ->
+        if (id.isBlank()) flowOf(emptyList<BudgetItemEntity>()) else budgetRepo.observeByEvent(id)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val tierBreakdown: StateFlow<List<TierBreakdown>> = _eventId.flatMapLatest { id ->
+        if (id.isBlank()) flowOf(emptyList()) else ticketRepo.tierBreakdownByEvent(id)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     fun setEventId(id: String) { _eventId.value = id }
@@ -399,7 +412,7 @@ class WrapReportViewModel(
         private val tr: TicketRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T = 
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
             WrapReportViewModel(er, gr, br, tr) as T
     }
 }
@@ -407,7 +420,7 @@ class WrapReportViewModel(
 // ── InvitationViewModel ────────────────────────────────────────────────────────
 class InvitationViewModel(private val eventRepo: EventRepository) : ViewModel() {
     private val _eventId = MutableStateFlow("")
-    
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val event: StateFlow<EventEntity?> = _eventId.flatMapLatest { id ->
         if (id.isBlank()) flowOf<EventEntity?>(null)

@@ -49,7 +49,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
-    
+
     // CameraX
     val cameraxVersion = "1.4.0"
     implementation("androidx.camera:camera-core:$cameraxVersion")
@@ -60,6 +60,10 @@ dependencies {
 
     // ML Kit Barcode Scanning
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
+
+    // ZXing — QR code generation in TicketViewScreen
+    // (ML Kit uses ZXing internally but doesn't expose it; this makes it explicit)
+    implementation("com.google.zxing:core:3.5.3")
 
     // Room
     implementation(libs.androidx.room.runtime)

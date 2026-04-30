@@ -40,14 +40,14 @@ class GuestRepository(private val dao: GuestDao) {
     suspend fun checkOut(guestId: String) = dao.updateCheckInStatus(guestId, false)
     suspend fun createGuest(eventId: String, name: String, email: String, phone: String, tag: String, dietaryRestrictions: String, userId: String? = null) {
         val guest = GuestEntity(
-            id = UUID.randomUUID().toString(), 
-            eventId = eventId, 
-            userId = userId, 
-            name = name, 
-            email = email, 
-            phone = phone, 
-            status = "Confirmed", 
-            tag = tag, 
+            id = UUID.randomUUID().toString(),
+            eventId = eventId,
+            userId = userId,
+            name = name,
+            email = email,
+            phone = phone,
+            status = "Confirmed",
+            tag = tag,
             dietaryRestrictions = dietaryRestrictions
         )
         dao.insert(guest)
@@ -62,34 +62,35 @@ class TicketRepository(private val dao: TicketDao) {
     fun countTotalByEvent(eventId: String): Flow<Int> = dao.countTotalByEvent(eventId)
     fun revenueByEvent(eventId: String): Flow<Long?> = dao.revenueByEvent(eventId)
     suspend fun getById(id: String): TicketEntity? = dao.getById(id)
-    
+
     suspend fun purchaseTicket(
-        eventId: String, 
-        userId: String, 
-        tier: String, 
-        price: Long, 
-        quantity: Int, 
+        eventId: String,
+        userId: String,
+        tier: String,
+        price: Long,
+        quantity: Int,
         status: String = "PAID",
         paymentId: String? = null
     ): String {
         val id = UUID.randomUUID().toString()
         val ticket = TicketEntity(
-            id = id, 
-            eventId = eventId, 
-            userId = userId, 
-            tier = tier, 
-            price = price, 
-            quantity = quantity, 
+            id = id,
+            eventId = eventId,
+            userId = userId,
+            tier = tier,
+            price = price,
+            quantity = quantity,
             status = status,
             paymentId = paymentId
         )
         dao.insert(ticket)
         return id
     }
-    
+
     suspend fun markAsUsed(ticketId: String) = dao.updateUsage(ticketId, true)
     suspend fun updateStatus(ticketId: String, status: String) = dao.updateStatus(ticketId, status)
     suspend fun cancelTicket(id: String, cancelled: Boolean) = dao.updateCancellation(id, cancelled)
+    fun tierBreakdownByEvent(eventId: String) = dao.tierBreakdownByEvent(eventId)
 }
 
 // ── ContributionRepository ────────────────────────────────────────────────────

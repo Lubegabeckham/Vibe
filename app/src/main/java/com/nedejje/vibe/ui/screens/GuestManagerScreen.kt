@@ -1,5 +1,6 @@
 package com.nedejje.vibe.ui.screens
 
+import android.content.Intent
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -23,12 +24,36 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.nedejje.vibe.VibeApplication
 import com.nedejje.vibe.db.GuestEntity
 import com.nedejje.vibe.viewmodel.GuestManagerViewModel
+import java.io.File
+
+// ── CSV Export ─────────────────────────────────────────────────────────────────
+private fun exportGuestsToCsv(context: android.content.Context, guests: List<GuestEntity>, eventId: String) {
+    val csv = buildString {
+        appendLine("Name,Email,Phone,Tag,Status,Checked In,Dietary Restrictions")
+        guests.forEach { g ->
+            // Wrap fields in quotes and escape internal quotes (RFC 4180)
+            fun String.csvEscape() = "\"${replace("\"", "\"\"")}\""
+            appendLine("${g.name.csvEscape()},${g.email.csvEscape()},${g.phone.csvEscape()},${g.tag.csvEscape()},${g.status.csvEscape()},${if (g.checkedIn) "Yes" else "No"},${g.dietaryRestrictions.csvEscape()}")
+        }
+    }
+    val file = File(context.cacheDir, "guests_${eventId.take(8)}.csv")
+    file.writeText(csv)
+    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/csv"
+        putExtra(Intent.EXTRA_STREAM, uri)
+        putExtra(Intent.EXTRA_SUBJECT, "Guest List Export")
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    context.startActivity(Intent.createChooser(intent, "Export Guest List"))
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,8 +99,8 @@ fun GuestManagerScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* Export functionality */ }) {
-                        Icon(Icons.Default.Share, "Export")
+                    IconButton(onClick = { exportGuestsToCsv(context, guests, eventId ?: "") }) {
+                        Icon(Icons.Default.Share, "Export Guest List as CSV")
                     }
                 }
             )
@@ -91,14 +116,14 @@ fun GuestManagerScreen(
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-            
+
             // ── Stats Dashboard ──────────────────────────────────────────
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 StatBox("Total Guests", "$guestCount", Icons.Default.Groups, Modifier.weight(1f))
-                StatBox("Checked In", "$checkedInCount", Icons.Default.CheckCircle, Modifier.weight(1f), 
+                StatBox("Checked In", "$checkedInCount", Icons.Default.CheckCircle, Modifier.weight(1f),
                     color = Color(0xFF4CAF50))
             }
 
@@ -111,9 +136,9 @@ fun GuestManagerScreen(
                     color = Color(0xFF4CAF50),
                     trackColor = MaterialTheme.colorScheme.surfaceVariant
                 )
-                
+
                 Spacer(Modifier.height(16.dp))
-                
+
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { viewModel.onSearchQueryChange(it) },
@@ -148,7 +173,7 @@ fun GuestManagerScreen(
                     }
                 }
             }
-            
+
             Spacer(Modifier.height(8.dp))
 
             // ── Guest List ────────────────────────────────────────────────
@@ -194,7 +219,7 @@ fun GuestManagerScreen(
 @Composable
 private fun StatBox(label: String, value: String, icon: ImageVector, modifier: Modifier = Modifier, color: Color = MaterialTheme.colorScheme.primary) {
     Card(
-        modifier = modifier, 
+        modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.08f)),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -236,7 +261,7 @@ private fun EnhancedGuestCard(
                     Text(guest.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Surface(
-                            shape = RoundedCornerShape(6.dp), 
+                            shape = RoundedCornerShape(6.dp),
                             color = when(guest.tag) {
                                 "VIP" -> Color(0xFFE8B84B).copy(alpha = 0.2f)
                                 "Staff" -> MaterialTheme.colorScheme.secondaryContainer
@@ -244,8 +269,8 @@ private fun EnhancedGuestCard(
                             }
                         ) {
                             Text(
-                                text = guest.tag.uppercase(), 
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp), 
+                                text = guest.tag.uppercase(),
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = when(guest.tag) {
@@ -259,7 +284,7 @@ private fun EnhancedGuestCard(
                         }
                     }
                 }
-                
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = onCheckInToggle) {
                         Icon(
@@ -276,7 +301,7 @@ private fun EnhancedGuestCard(
                     )
                 }
             }
-            
+
             AnimatedVisibility(visible = expanded) {
                 Column(modifier = Modifier.padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -285,7 +310,7 @@ private fun EnhancedGuestCard(
                     if (guest.dietaryRestrictions.isNotBlank()) {
                         GuestInfoRow(Icons.Default.Restaurant, "Diet: ${guest.dietaryRestrictions}")
                     }
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                         horizontalArrangement = Arrangement.End
@@ -326,30 +351,30 @@ private fun AddGuestDialog(onDismiss: () -> Unit, onConfirm: (String, String, St
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
-                    value = name, onValueChange = { name = it }, 
+                    value = name, onValueChange = { name = it },
                     label = { Text("Full Name") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
                 OutlinedTextField(
-                    value = email, onValueChange = { email = it }, 
+                    value = email, onValueChange = { email = it },
                     label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
                 OutlinedTextField(
-                    value = phone, onValueChange = { phone = it }, 
+                    value = phone, onValueChange = { phone = it },
                     label = { Text("Phone Number") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 )
-                
+
                 Text("Guest Category", style = MaterialTheme.typography.labelMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf("Regular", "VIP", "Staff").forEach { t ->
                         FilterChip(
-                            selected = tag == t, 
-                            onClick = { tag = t }, 
+                            selected = tag == t,
+                            onClick = { tag = t },
                             label = { Text(t) },
                             shape = RoundedCornerShape(12.dp)
                         )
