@@ -25,6 +25,7 @@ class UserRepository(private val dao: UserDao) {
     suspend fun getById(id: String): UserEntity? = dao.getById(id)
     suspend fun getByEmail(email: String): UserEntity? = dao.getByEmail(email)
     fun searchUsers(query: String): Flow<List<UserEntity>> = dao.searchUsers("%$query%")
+    fun getAllNonAdmins(): Flow<List<UserEntity>> = dao.getAllNonAdmins()
     suspend fun insert(user: UserEntity) = dao.insert(user)
 }
 
@@ -37,8 +38,18 @@ class GuestRepository(private val dao: GuestDao) {
     suspend fun updateStatus(guestId: String, status: String) = dao.updateStatus(guestId, status)
     suspend fun checkIn(guestId: String) = dao.updateCheckInStatus(guestId, true)
     suspend fun checkOut(guestId: String) = dao.updateCheckInStatus(guestId, false)
-    suspend fun createGuest(eventId: String, name: String, email: String, phone: String, tag: String, dietaryRestrictions: String) {
-        val guest = GuestEntity(id = UUID.randomUUID().toString(), eventId = eventId, userId = null, name = name, email = email, phone = phone, status = "Pending", tag = tag, dietaryRestrictions = dietaryRestrictions)
+    suspend fun createGuest(eventId: String, name: String, email: String, phone: String, tag: String, dietaryRestrictions: String, userId: String? = null) {
+        val guest = GuestEntity(
+            id = UUID.randomUUID().toString(), 
+            eventId = eventId, 
+            userId = userId, 
+            name = name, 
+            email = email, 
+            phone = phone, 
+            status = "Confirmed", 
+            tag = tag, 
+            dietaryRestrictions = dietaryRestrictions
+        )
         dao.insert(guest)
     }
     suspend fun delete(guest: GuestEntity) = dao.delete(guest)
@@ -47,16 +58,37 @@ class GuestRepository(private val dao: GuestDao) {
 // ── TicketRepository ─────────────────────────────────────────────────────────
 class TicketRepository(private val dao: TicketDao) {
     fun observeByUser(userId: String): Flow<List<TicketEntity>> = dao.observeByUser(userId)
-    fun countByEvent(eventId: String): Flow<Int> = dao.countByEvent(eventId)
+    fun countPaidByEvent(eventId: String): Flow<Int> = dao.countPaidByEvent(eventId)
+    fun countTotalByEvent(eventId: String): Flow<Int> = dao.countTotalByEvent(eventId)
     fun revenueByEvent(eventId: String): Flow<Long?> = dao.revenueByEvent(eventId)
     suspend fun getById(id: String): TicketEntity? = dao.getById(id)
-    suspend fun purchaseTicket(eventId: String, userId: String, tier: String, price: Long, quantity: Int, paymentId: String? = null): String {
+    
+    suspend fun purchaseTicket(
+        eventId: String, 
+        userId: String, 
+        tier: String, 
+        price: Long, 
+        quantity: Int, 
+        status: String = "PAID",
+        paymentId: String? = null
+    ): String {
         val id = UUID.randomUUID().toString()
-        val ticket = TicketEntity(id = id, eventId = eventId, userId = userId, tier = tier, price = price, quantity = quantity, paymentId = paymentId)
+        val ticket = TicketEntity(
+            id = id, 
+            eventId = eventId, 
+            userId = userId, 
+            tier = tier, 
+            price = price, 
+            quantity = quantity, 
+            status = status,
+            paymentId = paymentId
+        )
         dao.insert(ticket)
         return id
     }
+    
     suspend fun markAsUsed(ticketId: String) = dao.updateUsage(ticketId, true)
+    suspend fun updateStatus(ticketId: String, status: String) = dao.updateStatus(ticketId, status)
     suspend fun cancelTicket(id: String, cancelled: Boolean) = dao.updateCancellation(id, cancelled)
 }
 

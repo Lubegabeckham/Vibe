@@ -55,7 +55,11 @@ fun ProfileScreen(navController: NavController) {
     val context = LocalContext.current
     val app = context.applicationContext as VibeApplication
     val ticketViewModel: TicketViewModel = viewModel(
-        factory = TicketViewModel.Factory(app.container.ticketRepository, app.container.eventRepository)
+        factory = TicketViewModel.Factory(
+            app.container.ticketRepository, 
+            app.container.eventRepository,
+            app.container.guestRepository
+        )
     )
     val scope = rememberCoroutineScope()
 

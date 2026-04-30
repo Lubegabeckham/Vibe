@@ -13,7 +13,7 @@ data class EventEntity(
     val location: String,
     val date: String,
     val description: String,
-    val category: String = "All", // Added category field
+    val category: String = "All",
     val isFree: Boolean,
     val priceOrdinary: Long,
     val priceVIP: Long,
@@ -30,7 +30,7 @@ data class UserEntity(
     val email: String,
     val phone: String,
     val isAdmin: Boolean = false,
-    val passwordHash: String = "",   // store BCrypt hash in production; demo uses plain
+    val passwordHash: String = "",
     val createdAt: Long = System.currentTimeMillis()
 )
 
@@ -46,12 +46,12 @@ data class UserEntity(
 data class GuestEntity(
     @PrimaryKey val id: String,
     val eventId: String,
-    val userId: String?,           // null if walk-in / manually added
+    val userId: String?,
     val name: String,
     val email: String,
     val phone: String,
     val status: String,            // "Confirmed" | "Pending" | "Declined"
-    val tag: String,               // "VIP" | "Regular" | "+1" etc.
+    val tag: String,               // "VIP" | "Regular" | "Staff" etc.
     val dietaryRestrictions: String = "",
     val checkedIn: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
@@ -70,25 +70,21 @@ data class TicketEntity(
     @PrimaryKey val id: String,
     val eventId: String,
     val userId: String,
-    val tier: String,              // "Ordinary" | "VIP" | "VVIP" | "Free"
-    val price: Long,               // 0 for free tickets
+    val tier: String,
+    val price: Long,
     val quantity: Int = 1,
     val purchasedAt: Long = System.currentTimeMillis(),
     val isUsed: Boolean = false,
     val isCancelled: Boolean = false,
-    val paymentId: String? = null // Reference to a payment transaction
+    val status: String = "PAID",   // "PAID" | "PENDING"
+    val paymentId: String? = null
 )
 
 // ── Contribution (Potluck) ─────────────────────────────────────────────────────
 @Entity(
     tableName = "contributions",
     foreignKeys = [
-        ForeignKey(
-            entity = EventEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["eventId"],
-            onDelete = ForeignKey.CASCADE
-        )
+        ForeignKey(entity = EventEntity::class, parentColumns = ["id"], childColumns = ["eventId"], onDelete = ForeignKey.CASCADE)
     ],
     indices = [Index("eventId")]
 )
@@ -96,7 +92,7 @@ data class ContributionEntity(
     @PrimaryKey val id: String,
     val eventId: String,
     val itemName: String,
-    val category: String, // FOOD, DRINKS, etc.
+    val category: String,
     val personClaimed: String? = null
 )
 
@@ -104,12 +100,7 @@ data class ContributionEntity(
 @Entity(
     tableName = "budget_items",
     foreignKeys = [
-        ForeignKey(
-            entity = EventEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["eventId"],
-            onDelete = ForeignKey.CASCADE
-        )
+        ForeignKey(entity = EventEntity::class, parentColumns = ["id"], childColumns = ["eventId"], onDelete = ForeignKey.CASCADE)
     ],
     indices = [Index("eventId")]
 )
@@ -120,7 +111,7 @@ data class BudgetItemEntity(
     val amount: Double
 )
 
-// ── Favorite (Wishlist) ────────────────────────────────────────────────────────
+// ── Favorite ──────────────────────────────────────────────────────────────────
 @Entity(
     tableName = "favorites",
     primaryKeys = ["userId", "eventId"],
@@ -136,7 +127,7 @@ data class FavoriteEntity(
     val savedAt: Long = System.currentTimeMillis()
 )
 
-// ── Social: Follow ────────────────────────────────────────────────────────────
+// ── Social ────────────────────────────────────────────────────────────────────
 @Entity(
     tableName = "follows",
     primaryKeys = ["followerId", "followedId"],
@@ -152,7 +143,6 @@ data class FollowEntity(
     val createdAt: Long = System.currentTimeMillis()
 )
 
-// ── Event: Review/Comment ─────────────────────────────────────────────────────
 @Entity(
     tableName = "reviews",
     foreignKeys = [
@@ -165,7 +155,7 @@ data class ReviewEntity(
     @PrimaryKey val id: String,
     val userId: String,
     val eventId: String,
-    val rating: Int, // 1-5
+    val rating: Int,
     val comment: String,
     val createdAt: Long = System.currentTimeMillis()
 )
@@ -176,8 +166,8 @@ data class PaymentEntity(
     @PrimaryKey val id: String,
     val userId: String,
     val amount: Long,
-    val provider: String, // e.g., "MTN_MOMO", "AIRTEL_MONEY"
+    val provider: String,
     val phoneNumber: String,
-    val status: String, // "PENDING", "SUCCESS", "FAILED"
+    val status: String,
     val createdAt: Long = System.currentTimeMillis()
 )

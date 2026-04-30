@@ -16,6 +16,7 @@ class AppContainer(application: Application) {
     val contributionRepository = ContributionRepository(db.contributionDao())
     val budgetRepository       = BudgetRepository(db.budgetDao())
     val favoriteRepository     = FavoriteRepository(db.favoriteDao())
+    val paymentRepository      = PaymentRepository(db.paymentDao())
 }
 
 // ---------------------------------------------------------------------------

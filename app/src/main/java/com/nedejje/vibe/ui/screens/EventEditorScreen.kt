@@ -1,5 +1,7 @@
 package com.nedejje.vibe.ui.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,7 +14,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -21,6 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.nedejje.vibe.VibeApplication
+import com.nedejje.vibe.ui.util.eventImageName
 import com.nedejje.vibe.viewmodel.EventEditorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,6 +56,13 @@ fun EventEditorScreen(navController: NavController, eventId: String?) {
     var saving       by remember { mutableStateOf(false) }
 
     val categories = listOf("All", "Music", "Tech", "Sports", "Food")
+
+    // Image preview based on title
+    val imageResId: Int? = remember(title) {
+        eventImageName(title)
+            ?.let { name -> context.resources.getIdentifier(name, "drawable", context.packageName) }
+            ?.takeIf { it != 0 }
+    }
 
     // Pre-fill when editing
     LaunchedEffect(existingEvent) {
@@ -112,6 +125,36 @@ fun EventEditorScreen(navController: NavController, eventId: String?) {
                 .padding(horizontal = 20.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Event Preview / Image Section
+            SectionHeader("Event Image Preview")
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                if (imageResId != null) {
+                    Image(
+                        painter = painterResource(id = imageResId),
+                        contentDescription = "Event Preview",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.Image, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
+                            Spacer(Modifier.height(8.dp))
+                            Text("No image matched", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("Type keywords like 'Jazz', 'Tech', or 'Yoga'", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(4.dp))
+
             // Basic info
             SectionHeader("Event Details")
 
@@ -120,6 +163,7 @@ fun EventEditorScreen(navController: NavController, eventId: String?) {
                 label = { Text("Event Title *") },
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = { Icon(Icons.Default.Event, null) },
+                placeholder = { Text("e.g. Afrobeat Night") },
                 singleLine = true
             )
             OutlinedTextField(

@@ -41,6 +41,9 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE name LIKE :query OR email LIKE :query")
     fun searchUsers(query: String): Flow<List<UserEntity>>
 
+    @Query("SELECT * FROM users WHERE isAdmin = 0")
+    fun getAllNonAdmins(): Flow<List<UserEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(user: UserEntity)
 }
@@ -86,10 +89,13 @@ interface TicketDao {
     @Query("SELECT * FROM tickets WHERE id = :id")
     suspend fun getById(id: String): TicketEntity?
 
-    @Query("SELECT COUNT(*) FROM tickets WHERE eventId = :eventId")
-    fun countByEvent(eventId: String): Flow<Int>
+    @Query("SELECT COUNT(*) FROM tickets WHERE eventId = :eventId AND status = 'PAID'")
+    fun countPaidByEvent(eventId: String): Flow<Int>
 
-    @Query("SELECT SUM(price * quantity) FROM tickets WHERE eventId = :eventId")
+    @Query("SELECT COUNT(*) FROM tickets WHERE eventId = :eventId")
+    fun countTotalByEvent(eventId: String): Flow<Int>
+
+    @Query("SELECT SUM(price * quantity) FROM tickets WHERE eventId = :eventId AND status = 'PAID'")
     fun revenueByEvent(eventId: String): Flow<Long?>
 
     @Query("UPDATE tickets SET isUsed = :isUsed WHERE id = :id")
@@ -97,6 +103,9 @@ interface TicketDao {
 
     @Query("UPDATE tickets SET isCancelled = :cancelled WHERE id = :id")
     suspend fun updateCancellation(id: String, cancelled: Boolean)
+
+    @Query("UPDATE tickets SET status = :status WHERE id = :id")
+    suspend fun updateStatus(id: String, status: String)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(ticket: TicketEntity)
