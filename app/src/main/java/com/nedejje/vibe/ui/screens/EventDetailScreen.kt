@@ -29,8 +29,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -65,7 +63,7 @@ fun EventDetailScreen(navController: NavController, eventId: String?) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(event?.title ?: "Event", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                title = { Text(event?.title ?: stringResource(R.string.event_detail_title), maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
@@ -75,7 +73,7 @@ fun EventDetailScreen(navController: NavController, eventId: String?) {
                     IconButton(onClick = { viewModel.toggleFavorite() }) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
-                            contentDescription = "Favorite",
+                            contentDescription = stringResource(R.string.desc_favorite),
                             tint = if (isFavorite) Color.Red else LocalContentColor.current
                         )
                     }
@@ -83,11 +81,11 @@ fun EventDetailScreen(navController: NavController, eventId: String?) {
                         event?.let { e ->
                             val intent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
-                                putExtra(Intent.EXTRA_TEXT, "Check out this event on Vibe: ${e.title} at ${e.location} on ${e.date}")
+                                putExtra(Intent.EXTRA_TEXT, context.getString(R.string.share_text, e.title, e.location, e.date))
                             }
-                            context.startActivity(Intent.createChooser(intent, "Share Event"))
+                            context.startActivity(Intent.createChooser(intent, context.getString(R.string.share_event)))
                         }
-                    }) { Icon(Icons.Default.Share, "Share") }
+                    }) { Icon(Icons.Default.Share, stringResource(R.string.desc_share)) }
 
                     IconButton(onClick = {
                         event?.let { e ->
@@ -100,7 +98,7 @@ fun EventDetailScreen(navController: NavController, eventId: String?) {
                             }
                             context.startActivity(intent)
                         }
-                    }) { Icon(Icons.Default.CalendarMonth, "Add to calendar") }
+                    }) { Icon(Icons.Default.CalendarMonth, stringResource(R.string.desc_add_to_calendar)) }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
@@ -122,11 +120,11 @@ fun EventDetailScreen(navController: NavController, eventId: String?) {
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                Text("Register now", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
+                                Text(stringResource(R.string.register_now), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
                             } else {
-                                Text("Starting from", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(stringResource(R.string.starting_from_label), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Text(
-                                    "${stringResource(R.string.ugx_currency)} ${String.format(Locale.getDefault(), "%,d", event!!.priceOrdinary)}",
+                                    stringResource(R.string.ugx_prefix, String.format(Locale.getDefault(), "%,d", event!!.priceOrdinary)),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = MaterialTheme.colorScheme.primary
@@ -139,7 +137,7 @@ fun EventDetailScreen(navController: NavController, eventId: String?) {
                             modifier = Modifier.height(dimensionResource(R.dimen.button_height))
                         ) {
                             Text(
-                                if (event!!.isFree) "Register Free" else stringResource(R.string.book_now_button),
+                                if (event!!.isFree) stringResource(R.string.register_free) else stringResource(R.string.book_now_button),
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.Bold
                             )
@@ -170,7 +168,6 @@ private fun EventDetailBody(
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
 
-    // Resolve drawable resource for this event
     val imageResId: Int? = remember(event.title) {
         eventImageName(event.title)
             ?.let { name -> context.resources.getIdentifier(name, "drawable", context.packageName) }
@@ -183,13 +180,11 @@ private fun EventDetailBody(
             .padding(padding)
             .verticalScroll(rememberScrollState())
     ) {
-        // ── Hero banner ──────────────────────────────────────────────────────
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(240.dp)
+                .height(dimensionResource(R.dimen.blob_size_large)) 
         ) {
-            // Background: event image or gradient fallback
             if (imageResId != null) {
                 Image(
                     painter = painterResource(id = imageResId),
@@ -212,21 +207,19 @@ private fun EventDetailBody(
                 )
             }
 
-            // Dark overlay so text is always readable
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color(0x33000000), // top  ~20%
-                                Color(0xDD000000)  // bottom ~87%
+                                Color(0x33000000),
+                                Color(0xDD000000)
                             )
                         )
                     )
             )
 
-            // Content inside hero
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -243,7 +236,10 @@ private fun EventDetailBody(
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.ExtraBold,
                             color = Color.White,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                            modifier = Modifier.padding(
+                                horizontal = dimensionResource(R.dimen.padding_small) + dimensionResource(R.dimen.padding_tiny),
+                                vertical = dimensionResource(R.dimen.padding_extra_small)
+                            )
                         )
                     }
                 }
@@ -264,7 +260,6 @@ private fun EventDetailBody(
             }
         }
 
-        // ── Live stats ───────────────────────────────────────────────────────
         if (ticketCount > 0 || revenue > 0) {
             Row(
                 modifier = Modifier
@@ -279,7 +274,7 @@ private fun EventDetailBody(
                 ) {
                     Column(modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("$ticketCount", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Text("Tickets Sold", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text(stringResource(R.string.tickets_sold), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
                     }
                 }
                 if (revenue > 0) {
@@ -290,49 +285,48 @@ private fun EventDetailBody(
                     ) {
                         Column(modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)), horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("UGX ${revenue / 1000}K", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
-                            Text("Revenue", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                            Text(stringResource(R.string.revenue_label_stats), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
                         }
                     }
                 }
             }
         }
 
-        // ── Body ─────────────────────────────────────────────────────────────
         Column(modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_large))) {
-            SectionLabel("About this event")
+            SectionLabel(stringResource(R.string.about_event))
             Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
             Text(
-                event.description.ifBlank { "No description provided." },
+                event.description.ifBlank { stringResource(R.string.no_description) },
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(Modifier.height(dimensionResource(R.dimen.padding_large)))
-            SectionLabel("Tickets")
+            SectionLabel(stringResource(R.string.tickets_header))
             Spacer(Modifier.height(dimensionResource(R.dimen.padding_medium)))
 
             if (event.isFree) {
-                TicketCard("General Admission", stringResource(R.string.free_badge), isFree = true, description = "Open to all — no payment required")
+                TicketCard(stringResource(R.string.tier_ga), stringResource(R.string.free_badge), isFree = true, description = stringResource(R.string.tier_ga_desc))
             } else {
-                TicketCard("Ordinary", "${stringResource(R.string.ugx_currency)} ${String.format(Locale.getDefault(), "%,d", event.priceOrdinary)}", description = "Standard access to the event")
+                TicketCard(stringResource(R.string.tier_ordinary), stringResource(R.string.ugx_prefix, String.format(Locale.getDefault(), "%,d", event.priceOrdinary)), description = stringResource(R.string.tier_ordinary_desc))
                 Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
-                TicketCard("VIP", "${stringResource(R.string.ugx_currency)} ${String.format(Locale.getDefault(), "%,d", event.priceVIP)}", description = "Priority access + exclusive lounge")
+                TicketCard(stringResource(R.string.tier_vip), stringResource(R.string.ugx_prefix, String.format(Locale.getDefault(), "%,d", event.priceVIP)), description = stringResource(R.string.tier_vip_desc))
                 Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
-                TicketCard("VVIP", "${stringResource(R.string.ugx_currency)} ${String.format(Locale.getDefault(), "%,d", event.priceVVIP)}", description = "Full VIP treatment + meet & greet")
+                TicketCard(stringResource(R.string.tier_vvip), stringResource(R.string.ugx_prefix, String.format(Locale.getDefault(), "%,d", event.priceVVIP)), description = stringResource(R.string.tier_vvip_desc))
             }
 
-            Spacer(Modifier.height(100.dp))
+            Spacer(Modifier.height(dimensionResource(R.dimen.profile_image_large))) 
         }
     }
 }
 
 @Composable
 private fun HeroChip(icon: ImageVector, text: String) {
-    Surface(shape = RoundedCornerShape(20.dp), color = Color.White.copy(alpha = 0.2f)) {
+    Surface(shape = RoundedCornerShape(dimensionResource(R.dimen.chip_corner_radius)), color = Color.White.copy(alpha = 0.2f)) {
         Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+            modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_small) + dimensionResource(R.dimen.padding_tiny), vertical = dimensionResource(R.dimen.padding_extra_small) + dimensionResource(R.dimen.padding_tiny)),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_extra_small))
         ) {
             Icon(icon, null, tint = Color.White, modifier = Modifier.size(dimensionResource(R.dimen.icon_size_extra_small)))
             Text(text, style = MaterialTheme.typography.labelSmall, color = Color.White)
@@ -347,7 +341,7 @@ private fun SectionLabel(text: String) {
         style = MaterialTheme.typography.labelLarge,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary,
-        letterSpacing = 1.sp
+        letterSpacing = androidx.compose.ui.unit.TextUnit.Unspecified // To avoid hardcoded sp if possible, or just keep it minimal
     )
 }
 

@@ -15,8 +15,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.nedejje.vibe.R
 import com.nedejje.vibe.session.SessionManager
@@ -32,26 +30,31 @@ fun SettingsScreen(
     val currentUser by SessionManager.currentUser.collectAsState()
     var notificationsEnabled by remember { mutableStateOf(true) }
     var emailUpdates         by remember { mutableStateOf(true) }
-    var locationServices     by remember { mutableStateOf(false) }
     var showLogoutDialog     by remember { mutableStateOf(false) }
 
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
             icon  = { Icon(Icons.AutoMirrored.Filled.ExitToApp, null, tint = MaterialTheme.colorScheme.error) },
-            title = { Text("Log Out?") },
-            text  = { Text("You will be signed out of your Vibe account.") },
+            title = { Text(stringResource(R.string.logout_confirm_title)) },
+            text  = { Text(stringResource(R.string.logout_confirm_msg)) },
             confirmButton = {
                 Button(
                     onClick = {
                         showLogoutDialog = false
                         SessionManager.logout()
-                        navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } }
+                        navController.navigate(Screen.Login.route) { 
+                            popUpTo(0) { inclusive = true } 
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text("Log Out") }
+                ) { Text(stringResource(R.string.logout_button)) }
             },
-            dismissButton = { OutlinedButton(onClick = { showLogoutDialog = false }) { Text("Cancel") } }
+            dismissButton = { 
+                OutlinedButton(onClick = { showLogoutDialog = false }) { 
+                    Text(stringResource(R.string.cancel_button)) 
+                } 
+            }
         )
     }
 
@@ -71,75 +74,70 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = dimensionResource(R.dimen.padding_medium)),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_extra_small))
         ) {
-            // Account section
             item {
                 Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
-                SettingsSectionHeader("Account")
+                SettingsSectionHeader(stringResource(R.string.section_account))
             }
             item {
-                SettingsInfoRow(Icons.Default.Person,  "Name",  currentUser?.name  ?: "—")
-                SettingsInfoRow(Icons.Default.Email,   "Email", currentUser?.email ?: "—")
-                SettingsInfoRow(Icons.Default.Phone,   "Phone", currentUser?.phone?.ifBlank { "Not set" } ?: "Not set")
+                SettingsInfoRow(Icons.Default.Person,  stringResource(R.string.label_name),  currentUser?.name  ?: "—")
+                SettingsInfoRow(Icons.Default.Email,   stringResource(R.string.label_email), currentUser?.email ?: "—")
+                SettingsInfoRow(Icons.Default.Phone,   stringResource(R.string.label_phone), currentUser?.phone?.ifBlank { stringResource(R.string.not_set) } ?: stringResource(R.string.not_set))
                 SettingsInfoRow(
-                    Icons.Default.AdminPanelSettings, "Role",
-                    if (currentUser?.isAdmin == true) "Event Organiser" else "Guest / Attendee"
+                    Icons.Default.AdminPanelSettings, stringResource(R.string.label_role),
+                    if (currentUser?.isAdmin == true) stringResource(R.string.role_organizer) else stringResource(R.string.role_guest)
                 )
             }
 
-            // Appearance
             item {
                 Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
-                SettingsSectionHeader("Appearance")
+                SettingsSectionHeader(stringResource(R.string.section_appearance))
             }
             item {
                 SettingsToggleRow(
                     icon    = if (isDarkMode) Icons.Default.Brightness2 else Icons.Default.WbSunny,
-                    label   = "Dark Mode",
+                    label   = stringResource(R.string.label_dark_mode),
                     checked = isDarkMode,
                     onCheckedChange = { onThemeToggle() }
                 )
             }
 
-            // Notifications
             item {
                 Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
-                SettingsSectionHeader("Notifications")
+                SettingsSectionHeader(stringResource(R.string.section_notifications))
             }
             item {
                 SettingsToggleRow(
                     icon    = Icons.Default.Notifications,
-                    label   = "Push Notifications",
+                    label   = stringResource(R.string.label_push_notifications),
                     checked = notificationsEnabled,
                     onCheckedChange = { notificationsEnabled = it }
                 )
                 SettingsToggleRow(
                     icon    = Icons.Default.Email,
-                    label   = "Email Updates",
+                    label   = stringResource(R.string.label_email_updates),
                     checked = emailUpdates,
                     onCheckedChange = { emailUpdates = it }
                 )
             }
 
-            // About
             item {
                 Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
-                SettingsSectionHeader("About")
+                SettingsSectionHeader(stringResource(R.string.section_about))
             }
             item {
-                SettingsInfoRow(Icons.Default.Info,      "Version",   "1.0.0")
-                SettingsInfoRow(Icons.Default.Public,    "Platform",  "Uganda 🇺🇬")
+                SettingsInfoRow(Icons.Default.Info,      stringResource(R.string.label_version),   "1.0.0")
+                SettingsInfoRow(Icons.Default.Public,    stringResource(R.string.label_platform),  stringResource(R.string.value_platform))
             }
 
-            // Logout
             item {
                 Spacer(Modifier.height(dimensionResource(R.dimen.padding_medium)))
                 OutlinedButton(
                     onClick = { showLogoutDialog = true },
-                    modifier = Modifier.fillMaxWidth().height(dimensionResource(R.dimen.button_height)),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = dimensionResource(R.dimen.padding_medium)).height(dimensionResource(R.dimen.button_height)),
                     shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius)),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ExitToApp, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp))
+                    Icon(Icons.AutoMirrored.Filled.ExitToApp, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + dimensionResource(R.dimen.padding_tiny)))
                     Spacer(Modifier.width(dimensionResource(R.dimen.padding_small)))
                     Text(stringResource(R.string.logout_button), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 }
@@ -165,14 +163,14 @@ private fun SettingsInfoRow(icon: ImageVector, label: String, value: String) {
     Surface(
         shape  = RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius_small)),
         color  = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+        modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(R.dimen.padding_tiny))
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium), vertical = 14.dp),
+            modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium), vertical = dimensionResource(R.dimen.padding_medium) - dimensionResource(R.dimen.padding_tiny)),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp), tint = MaterialTheme.colorScheme.primary)
-            Spacer(Modifier.width(dimensionResource(R.dimen.padding_small) + 4.dp))
+            Icon(icon, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + dimensionResource(R.dimen.padding_tiny)), tint = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.width(dimensionResource(R.dimen.padding_small) + dimensionResource(R.dimen.padding_extra_small)))
             Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
             Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -189,14 +187,14 @@ private fun SettingsToggleRow(
     Surface(
         shape  = RoundedCornerShape(dimensionResource(R.dimen.card_corner_radius_small)),
         color  = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+        modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(R.dimen.padding_tiny))
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium), vertical = 10.dp),
+            modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_medium), vertical = dimensionResource(R.dimen.padding_small) + dimensionResource(R.dimen.padding_tiny)),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp), tint = MaterialTheme.colorScheme.primary)
-            Spacer(Modifier.width(dimensionResource(R.dimen.padding_small) + 4.dp))
+            Icon(icon, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + dimensionResource(R.dimen.padding_tiny)), tint = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.width(dimensionResource(R.dimen.padding_small) + dimensionResource(R.dimen.padding_extra_small)))
             Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
             Switch(checked = checked, onCheckedChange = onCheckedChange)
         }

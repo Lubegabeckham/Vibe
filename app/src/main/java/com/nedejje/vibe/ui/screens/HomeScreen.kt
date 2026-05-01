@@ -27,7 +27,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -58,24 +57,30 @@ fun HomeScreen(
     val currentUser by SessionManager.currentUser.collectAsState()
     var showMenu by remember { mutableStateOf(false) }
 
-    val categories = listOf("All", "Favorites", "Free", "Music", "Tech")
-    var selectedCategory by remember { mutableStateOf("All") }
+    val categories = listOf(
+        stringResource(R.string.cat_all),
+        stringResource(R.string.cat_favorites),
+        stringResource(R.string.cat_free),
+        stringResource(R.string.cat_music),
+        stringResource(R.string.cat_tech)
+    )
+    var selectedCategory by remember { mutableStateOf(categories[0]) }
 
     val favorites by app.container.favoriteRepository
         .observeFavorites(SessionManager.userId)
         .collectAsState(initial = emptyList())
 
     val filteredEvents = when (selectedCategory) {
-        "Favorites" -> events.filter { it.id in favorites }
-        "Free"      -> events.filter { it.isFree }
-        "Music"     -> events.filter {
+        stringResource(R.string.cat_favorites) -> events.filter { it.id in favorites }
+        stringResource(R.string.cat_free)      -> events.filter { it.isFree }
+        stringResource(R.string.cat_music)     -> events.filter {
             it.category.equals("Music", true) ||
                     it.title.contains("Jazz", true) || it.title.contains("Music", true) ||
                     it.title.contains("Concert", true) || it.title.contains("Reggae", true) ||
                     it.title.contains("Gospel", true) || it.title.contains("Hip Hop", true) ||
                     it.title.contains("Piano", true)
         }
-        "Tech"      -> events.filter {
+        stringResource(R.string.cat_tech)      -> events.filter {
             it.category.equals("Tech", true) ||
                     it.title.contains("Tech", true) || it.title.contains("Startup", true) ||
                     it.title.contains("Innovation", true) || it.title.contains("AI", true) ||
@@ -105,12 +110,12 @@ fun HomeScreen(
                     IconButton(onClick = onThemeToggle) {
                         Icon(
                             imageVector = if (isDarkMode) Icons.Default.WbSunny else Icons.Default.Brightness2,
-                            contentDescription = "Toggle Theme"
+                            contentDescription = stringResource(R.string.desc_toggle_theme)
                         )
                     }
                     Box {
                         IconButton(onClick = { showMenu = !showMenu }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+                            Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.desc_menu))
                         }
                         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                             if (currentUser?.isAdmin == true) {
@@ -136,14 +141,14 @@ fun HomeScreen(
                 NavigationBarItem(
                     selected = true,
                     onClick = {},
-                    icon = { Icon(Icons.Default.Home, "Home") },
-                    label = { Text("Discover") }
+                    icon = { Icon(Icons.Default.Home, null) },
+                    label = { Text(stringResource(R.string.nav_discover)) }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { navController.navigate(Screen.Profile.route) },
-                    icon = { Icon(Icons.Default.Person, "Profile") },
-                    label = { Text("Profile") }
+                    icon = { Icon(Icons.Default.Person, null) },
+                    label = { Text(stringResource(R.string.nav_profile)) }
                 )
             }
         }
@@ -183,7 +188,7 @@ fun HomeScreen(
                             label = { Text(cat) },
                             leadingIcon = if (selectedCategory == cat) {
                                 { Icon(Icons.Default.Check, null, Modifier.size(dimensionResource(R.dimen.icon_size_small))) }
-                            } else if (cat == "Favorites") {
+                            } else if (cat == stringResource(R.string.cat_favorites)) {
                                 { Icon(Icons.Default.Favorite, null, Modifier.size(dimensionResource(R.dimen.icon_size_small)), tint = Color.Red) }
                             } else null
                         )
@@ -203,8 +208,8 @@ fun HomeScreen(
                     else
                         stringResource(R.string.events_count, filteredEvents.size)
                     Text(countStr, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    if (selectedCategory != "All") {
-                        TextButton(onClick = { selectedCategory = "All" }) {
+                    if (selectedCategory != categories[0]) {
+                        TextButton(onClick = { selectedCategory = categories[0] }) {
                             Text(stringResource(R.string.clear_filter), style = MaterialTheme.typography.labelSmall)
                         }
                     }
@@ -218,7 +223,7 @@ fun HomeScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
                     ) {
-                        Icon(Icons.Default.EventBusy, null, Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Icon(Icons.Default.EventBusy, null, Modifier.size(dimensionResource(R.dimen.icon_size_huge)), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(stringResource(R.string.no_events_found), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(stringResource(R.string.no_events_subtitle), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
@@ -247,7 +252,6 @@ fun UserEventCard(
 ) {
     val context = LocalContext.current
 
-    // Look up drawable by name; falls back to null if no match
     val imageResId: Int? = remember(event.title) {
         eventImageName(event.title)
             ?.let { name -> context.resources.getIdentifier(name, "drawable", context.packageName) }
@@ -265,9 +269,8 @@ fun UserEventCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(160.dp)
+                .height(dimensionResource(R.dimen.blob_size_large) * 0.6f) // Approximate 160.dp using existing dimens or could add new
         ) {
-            // ── 1. Background: drawable image or gradient fallback ──────────
             if (imageResId != null) {
                 Image(
                     painter = painterResource(id = imageResId),
@@ -290,27 +293,23 @@ fun UserEventCard(
                 )
             }
 
-            // ── 2. Transparent dark overlay ─────────────────────────────────
-            // Adjust the alpha values below to change how dark the overlay is:
-            //   0x44 = 27%  |  0x88 = 53%  |  0xCC = 80%  |  0xFF = 100%
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color(0x44000000), // top — lighter so image shows
-                                Color(0xCC000000)  // bottom — darker for text readability
+                                Color(0x44000000),
+                                Color(0xCC000000)
                             )
                         )
                     )
             )
 
-            // ── 3. Coloured accent bar at top ───────────────────────────────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(4.dp)
+                    .height(dimensionResource(R.dimen.padding_extra_small))
                     .align(Alignment.TopStart)
                     .background(
                         Brush.horizontalGradient(
@@ -322,14 +321,12 @@ fun UserEventCard(
                     )
             )
 
-            // ── 4. Text content ─────────────────────────────────────────────
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(dimensionResource(R.dimen.padding_medium)),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Title + favourite button
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -350,31 +347,30 @@ fun UserEventCard(
                     ) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
-                            contentDescription = "Favorite",
+                            contentDescription = stringResource(R.string.desc_favorite),
                             tint = if (isFavorite) Color.Red else Color.White,
-                            modifier = Modifier.size(dimensionResource(R.dimen.icon_size_medium) - 4.dp)
+                            modifier = Modifier.size(dimensionResource(R.dimen.icon_size_medium) - dimensionResource(R.dimen.padding_extra_small))
                         )
                     }
                 }
 
-                // Date, location, price / free badge
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_extra_small))) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Default.CalendarToday, null,
-                            Modifier.size(dimensionResource(R.dimen.icon_size_extra_small) + 1.dp),
+                            Modifier.size(dimensionResource(R.dimen.icon_size_extra_small)),
                             tint = Color.White.copy(alpha = 0.8f)
                         )
-                        Spacer(Modifier.width(dimensionResource(R.dimen.padding_extra_small) + 1.dp))
+                        Spacer(Modifier.width(dimensionResource(R.dimen.padding_extra_small)))
                         Text(event.date, style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.85f))
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Default.LocationOn, null,
-                            Modifier.size(dimensionResource(R.dimen.icon_size_extra_small) + 1.dp),
+                            Modifier.size(dimensionResource(R.dimen.icon_size_extra_small)),
                             tint = Color.White.copy(alpha = 0.8f)
                         )
-                        Spacer(Modifier.width(dimensionResource(R.dimen.padding_extra_small) + 1.dp))
+                        Spacer(Modifier.width(dimensionResource(R.dimen.padding_extra_small)))
                         Text(
                             event.location,
                             style = MaterialTheme.typography.bodySmall,
@@ -390,9 +386,9 @@ fun UserEventCard(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text("From", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.6f))
+                                Text(stringResource(R.string.label_from), style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.6f))
                                 Text(
-                                    "UGX ${String.format(Locale.getDefault(), "%,d", event.priceOrdinary)}",
+                                    stringResource(R.string.ugx_prefix, String.format(Locale.getDefault(), "%,d", event.priceOrdinary)),
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -419,7 +415,7 @@ fun UserEventCard(
                                 fontWeight = FontWeight.ExtraBold,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                                 modifier = Modifier.padding(
-                                    horizontal = dimensionResource(R.dimen.padding_small) + 2.dp,
+                                    horizontal = dimensionResource(R.dimen.padding_small),
                                     vertical = dimensionResource(R.dimen.padding_extra_small)
                                 )
                             )

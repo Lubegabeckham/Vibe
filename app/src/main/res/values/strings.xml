@@ -6,6 +6,7 @@
     <string name="login_title">Login to Vibe</string>
     <string name="signup_title">Join Vibe</string>
     <string name="welcome_back">Welcome back</string>
+    <string name="welcome_back_comma">Welcome back,</string>
     <string name="email_label">Email</string>
     <string name="password_label">Password</string>
     <string name="full_name_label">Full Name</string>
@@ -17,6 +18,7 @@
     <string name="already_have_account_text">Already have an account? Login</string>
     <string name="new_to_vibe">New to Vibe?</string>
     <string name="or_divider">or</string>
+    <string name="phone_label">Phone Number</string>
 
     <!-- Home & Discovery -->
     <string name="discovery_title">Discover Events</string>
@@ -28,6 +30,159 @@
     <string name="no_events_found">No events found</string>
     <string name="no_events_subtitle">Try a different category or search term</string>
     <string name="free_entry">FREE ENTRY</string>
+    <string name="free_badge">FREE</string>
+    <string name="nav_discover">Discover</string>
+    <string name="nav_profile">Profile</string>
+    <string name="cat_all">All</string>
+    <string name="cat_favorites">Favorites</string>
+    <string name="cat_free">Free</string>
+    <string name="cat_music">Music</string>
+    <string name="cat_tech">Tech</string>
+    <string name="desc_toggle_theme">Toggle Theme</string>
+    <string name="desc_menu">Menu</string>
+    <string name="desc_favorite">Favorite</string>
+    <string name="label_from">From</string>
+
+    <!-- Event Detail -->
+    <string name="event_detail_title">Event</string>
+    <string name="share_event">Share Event</string>
+    <string name="share_text">Check out this event on Vibe: %1$s at %2$s on %3$s</string>
+    <string name="desc_share">Share</string>
+    <string name="desc_add_to_calendar">Add to calendar</string>
+    <string name="register_now">Register now</string>
+    <string name="starting_from_label">Starting from</string>
+    <string name="register_free">Register Free</string>
+    <string name="about_event">About this event</string>
+    <string name="no_description">No description provided.</string>
+    <string name="tickets_header">Tickets</string>
+    <string name="tickets_sold">Tickets Sold</string>
+    <string name="revenue_label_stats">Revenue</string>
+    <string name="tier_ga">General Admission</string>
+    <string name="tier_ga_desc">Open to all — no payment required</string>
+    <string name="tier_ordinary">Ordinary</string>
+    <string name="tier_ordinary_desc">Standard access to the event</string>
+    <string name="tier_vip">VIP</string>
+    <string name="tier_vip_desc">Priority access + exclusive lounge</string>
+    <string name="tier_vvip">VVIP</string>
+    <string name="tier_vvip_desc">Full VIP treatment + meet &amp; greet</string>
+    <string name="book_now_button">Book Now</string>
+
+    <!-- Settings & Profile -->
+    <string name="settings_title">Settings</string>
+    <string name="profile_title">My Profile</string>
+    <string name="section_account">Account</string>
+    <string name="label_name">Name</string>
+    <string name="label_email">Email</string>
+    <string name="label_phone">Phone</string>
+    <string name="label_role">Role</string>
+    <string name="role_organizer">Event Organiser</string>
+    <string name="role_guest">Guest / Attendee</string>
+    <string name="section_appearance">Appearance</string>
+    <string name="label_dark_mode">Dark Mode</string>
+    <string name="section_notifications">Notifications</string>
+    <string name="label_push_notifications">Push Notifications</string>
+    <string name="label_email_updates">Email Updates</string>
+    <string name="section_about">About</string>
+    <string name="label_version">Version</string>
+    <string name="label_platform">Platform</string>
+    <string name="value_platform">Uganda 🇺🇬</string>
+    <string name="logout_confirm_title">Log Out?</string>
+    <string name="logout_confirm_msg">You will be signed out of your Vibe account.</string>
+    <string name="logout_button">Log Out</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="error_name_empty">Name cannot be empty</string>
+    <string name="not_set">Not set</string>
+    <string name="my_bookings">My Bookings</string>
+    <string name="stat_upcoming">Upcoming</string>
+    <string name="stat_attended">Attended</string>
+    <string name="stat_spent">Spent</string>
+    <string name="stat_cancelled">Cancelled</string>
+    <string name="no_bookings_found">No bookings found</string>
+    <string name="event_ticket_placeholder">Event Ticket</string>
+    <string name="purchased_on_prefix">Purchased on %1$s</string>
+
+    <!-- Admin & Dashboard -->
+    <string name="admin_dashboard_title">Event Manager Dashboard</string>
+    <string name="admin_welcome_subtitle">Manage your events and guests</string>
+    <string name="stat_total_events">Total Events</string>
+    <string name="stat_free">Free</string>
+    <string name="stat_paid">Paid</string>
+    <string name="tool_guests">Guests</string>
+    <string name="tool_budget">Budget</string>
+    <string name="tool_report">Report</string>
+    <string name="tool_scanner">Scanner</string>
+    <string name="organizer_tools_header">Organizer Tools</string>
+    <string name="manage_events_header">Manage Your Events</string>
+    <string name="no_events_yet">No events yet</string>
+    <string name="create_first_event">Create First Event</string>
+    <string name="delete_event_title">Delete Event?</string>
+    <string name="delete_event_msg">\"%1$s\" will be permanently removed.</string>
+    <string name="delete_button">Delete</string>
+    <string name="switch_user_view">Switch to User View</string>
+    <string name="btn_new_event">New Event</string>
+    <string name="btn_manage">Manage</string>
+
+    <!-- Wrap Report -->
+    <string name="wrap_report_title">Post-Event Wrap Report</string>
+    <string name="financial_summary">Financial Summary</string>
+    <string name="net_profit">Net Profit</string>
+    <string name="net_loss">Net Loss</string>
+    <string name="revenue_label">Revenue</string>
+    <string name="expenses_label">Expenses</string>
+    <string name="attendance_summary">Attendance Summary</string>
+    <string name="total_guests">Total Guests</string>
+    <string name="checked_in">Checked In</string>
+    <string name="show_up_rate">Show-up Rate</string>
+    <string name="expense_breakdown">Expense Breakdown</string>
+    <string name="no_expenses_recorded">No expenses recorded</string>
+    <string name="close_report">Close Report</string>
+    <string name="paid_status">Paid</string>
+    <string name="ticket_sales_tier">Ticket Sales by Tier</string>
+    <string name="ticket_count_label">%1$d ticket</string>
+    <string name="tickets_count_label">%1$d tickets</string>
+    <string name="tier_breakdown_item">%1$s · %2$s · %3$s %4$s</string>
+
+    <!-- Guest Manager -->
+    <string name="guest_manager_title">Guest Manager</string>
+    <string name="guest_manager_subtitle">Verify and track attendance</string>
+    <string name="export_csv_desc">Export Guest List as CSV</string>
+    <string name="add_guest_desc">Add Guest</string>
+    <string name="search_guest_placeholder">Search by name or email...</string>
+    <string name="guest_arrived">Arrived</string>
+    <string name="remove_guest">Remove Guest</string>
+    <string name="add_manual_guest">Add Manual Guest</string>
+    <string name="guest_category">Guest Category</string>
+
+    <!-- Budget Tracker -->
+    <string name="budget_tracker_title">Budget Tracker</string>
+    <string name="budget_items_spent_summary">%1$d items · %2$s %3$s spent</string>
+    <string name="set_budget_limit_desc">Set Budget Limit</string>
+    <string name="add_expense">Add Expense</string>
+    <string name="remove_item_title">Remove Item?</string>
+    <string name="remove_item_msg">\"%1$s\" will be removed from the budget.</string>
+    <string name="remove_button">Remove</string>
+    <string name="total_spend_label">Total Spend</string>
+    <string name="budget_limit_label">Budget Limit</string>
+    <string name="used_percent">%1$d%% used</string>
+    <string name="over_budget_msg">OVER BUDGET by %1$s %2$s</string>
+    <string name="remaining_amount">%1$s %2$s remaining</string>
+    <string name="items_label">Items</string>
+    <string name="unpaid_label">Unpaid</string>
+    <string name="spending_by_category">Spending by Category</string>
+    <string name="expenses_count_label">%1$s Expenses</string>
+    <string name="no_expenses_yet_msg">No expenses yet</string>
+    <string name="add_first_expense_msg">Tap + to add your first expense</string>
+    <string name="edit_expense">Edit Expense</string>
+    <string name="item_name_label">Item Name *</string>
+    <string name="item_name_hint">e.g. Venue Deposit, DJ Fee</string>
+    <string name="amount_label_required">Amount (UGX) *</string>
+    <string name="category_label">Category</string>
+    <string name="notes_optional_label">Notes (optional)</string>
+    <string name="notes_hint">e.g. Paid via MTN MoMo</string>
+    <string name="error_name_required">Name is required</string>
+    <string name="error_valid_amount">Enter a valid amount</string>
 
     <!-- Ticket Purchase -->
     <string name="book_tickets_title">Book Tickets</string>
@@ -51,6 +206,21 @@
     <string name="increase_quantity">Increase</string>
     <string name="booking_success_msg_free">Your %1$d %2$s %3$s for\n%4$s are reserved.</string>
     <string name="booking_success_msg_paid">Your %1$d %2$s %3$s for\n%4$s have been paid for.</string>
+    <string name="label_choose_ticket">Choose your ticket</string>
+    <string name="label_num_tickets">Number of tickets</string>
+    <string name="label_total_amount">Total Amount</string>
+    <string name="btn_register">Register</string>
+    <string name="btn_book_now">Book Now</string>
+    <string name="select_payment_method">Select Payment Method</string>
+    <string name="card_number_label">Card Number</string>
+    <string name="pending_payment_msg">Your ticket will be marked as PENDING until payment is verified at the entrance.</string>
+    <string name="confirm_reservation">Confirm Reservation</string>
+    <string name="pay_amount">Pay %1$s %2$s</string>
+    <string name="reservation_received">Reservation Received</string>
+    <string name="payment_successful">Payment Successful!</string>
+    <string name="reservation_success_detail">Your ticket for %1$s is reserved. Please complete payment at the venue to activate your ticket.</string>
+    <string name="payment_success_detail">Your ticket for %1$s is ready. You\'ll need to show your QR code at the entrance.</string>
+    <string name="view_my_ticket_btn">View My Ticket</string>
 
     <!-- Ticket View -->
     <string name="your_ticket">Your Ticket</string>
@@ -60,43 +230,17 @@
     <string name="done_button">Done</string>
     <string name="add_to_calendar">Add to Calendar</string>
     <string name="ticket_id_prefix">#</string>
-
-    <!-- Profile & Team -->
-    <string name="profile_title">My Profile</string>
-    <string name="team_title">Project Team</string>
-    <string name="vibe_dev_team">Vibe Development Team</string>
-    <string name="reg_no_prefix">Reg No: %1$s</string>
-    <string name="logout_button">Logout</string>
-    <string name="settings_title">Settings</string>
-
-    <!-- Admin & Others -->
-    <string name="admin_dashboard_title">Event Manager Dashboard</string>
-    <string name="discover_events_header">Discover Events</string>
-    <string name="organizer_tools_header">Organizer Tools</string>
-    <string name="manage_events_header">Manage Your Events</string>
-    <string name="book_now_button">Book Now</string>
-    <string name="confirm_booking_button">Confirm Booking</string>
-    <string name="free_badge">FREE</string>
-    <string name="ugx_currency">UGX</string>
-    <string name="starting_from">Starting from %1$s %2$s</string>
-
-    <!-- Wrap Report -->
-    <string name="wrap_report_title">Post-Event Wrap Report</string>
-    <string name="financial_summary">Financial Summary</string>
-    <string name="net_profit">Net Profit</string>
-    <string name="net_loss">Net Loss</string>
-    <string name="revenue_label">Revenue</string>
-    <string name="expenses_label">Expenses</string>
-    <string name="attendance_summary">Attendance Summary</string>
-    <string name="total_guests">Total Guests</string>
-    <string name="checked_in">Checked In</string>
-    <string name="show_up_rate">Show-up Rate</string>
-    <string name="expense_breakdown">Expense Breakdown</string>
-    <string name="no_expenses_recorded">No expenses recorded</string>
-    <string name="close_report">Close Report</string>
-    <string name="paid_status">Paid</string>
+    <string name="ticket_qr_desc">Ticket QR code</string>
 
     <!-- Splash Screen -->
     <string name="experience_moment">experience the moment</string>
     <string name="premier_platform">Uganda\'s premier event platform</string>
+
+    <!-- Team & Currency -->
+    <string name="team_title">Development Team</string>
+    <string name="vibe_dev_team">Vibe Dev Team</string>
+    <string name="reg_no_prefix">Reg. No: %1$s</string>
+    <string name="ugx_currency">UGX</string>
+    <string name="ugx_prefix">UGX %1$s</string>
+
 </resources>

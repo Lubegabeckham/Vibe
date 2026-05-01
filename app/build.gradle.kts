@@ -61,8 +61,7 @@ dependencies {
     // ML Kit Barcode Scanning
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
 
-    // ZXing — QR code generation in TicketViewScreen
-    // (ML Kit uses ZXing internally but doesn't expose it; this makes it explicit)
+    // ZXing — QR code generation
     implementation("com.google.zxing:core:3.5.3")
 
     // Room
@@ -70,7 +69,11 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
+    // Testing
     testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

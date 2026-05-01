@@ -22,7 +22,6 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -34,10 +33,10 @@ import com.nedejje.vibe.viewmodel.TicketViewModel
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-enum class BookingStatus(val label: String) {
-    UPCOMING("Upcoming"),
-    ATTENDED("Attended"),
-    CANCELLED("Cancelled")
+enum class BookingStatus(val labelRes: Int) {
+    UPCOMING(R.string.stat_upcoming),
+    ATTENDED(R.string.stat_attended),
+    CANCELLED(R.string.stat_cancelled)
 }
 
 data class BookingRecord(
@@ -65,7 +64,6 @@ fun ProfileScreen(navController: NavController) {
 
     val currentUser by SessionManager.currentUser.collectAsState()
     
-    // Load real tickets from DB
     LaunchedEffect(currentUser) {
         currentUser?.let { ticketViewModel.loadForUser(it.id) }
     }
@@ -80,12 +78,11 @@ fun ProfileScreen(navController: NavController) {
         displayName.split(" ").mapNotNull { it.firstOrNull()?.uppercaseChar() }.take(2).joinToString("")
     }
 
-    // Map DB tickets to UI BookingRecords
     val displayBookings = realTickets.map { t ->
         BookingRecord(
             id = t.id,
-            eventName = "Event Ticket", 
-            date = "Purchased on ${java.text.SimpleDateFormat("MMM dd", Locale.getDefault()).format(java.util.Date(t.purchasedAt))}",
+            eventName = context.getString(R.string.event_ticket_placeholder), 
+            date = context.getString(R.string.purchased_on_prefix, java.text.SimpleDateFormat("MMM dd", Locale.getDefault()).format(java.util.Date(t.purchasedAt))),
             tier = t.tier,
             status = if (t.isCancelled) BookingStatus.CANCELLED else if (t.isUsed) BookingStatus.ATTENDED else BookingStatus.UPCOMING,
             amountPaid = t.price * t.quantity
@@ -99,7 +96,6 @@ fun ProfileScreen(navController: NavController) {
     var activeFilter     by remember { mutableStateOf<BookingStatus?>(null) }
     val filteredBookings = if (activeFilter == null) displayBookings else displayBookings.filter { it.status == activeFilter }
 
-    // Edit sheet
     var showEditSheet by remember { mutableStateOf(false) }
     var editName      by remember { mutableStateOf(displayName) }
     var editEmail     by remember { mutableStateOf(email) }
@@ -115,27 +111,27 @@ fun ProfileScreen(navController: NavController) {
                     .padding(bottom = dimensionResource(R.dimen.spacer_large)),
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_medium))
             ) {
-                Text("Edit Profile", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.edit_profile), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 OutlinedTextField(
                     value = editName, onValueChange = { editName = it; nameError = false },
                     label = { Text(stringResource(R.string.full_name_label)) }, isError = nameError,
-                    supportingText = { if (nameError) Text("Name cannot be empty") },
+                    supportingText = { if (nameError) Text(stringResource(R.string.error_name_empty)) },
                     singleLine = true,
-                    leadingIcon = { Icon(Icons.Default.Person, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp)) },
+                    leadingIcon = { Icon(Icons.Default.Person, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + dimensionResource(R.dimen.padding_tiny))) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
                 )
                 OutlinedTextField(
                     value = editEmail, onValueChange = { editEmail = it },
                     label = { Text(stringResource(R.string.email_label)) }, singleLine = true,
-                    leadingIcon = { Icon(Icons.Default.Email, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp)) },
+                    leadingIcon = { Icon(Icons.Default.Email, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + dimensionResource(R.dimen.padding_tiny))) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
                 )
                 OutlinedTextField(
                     value = editPhone, onValueChange = { editPhone = it },
-                    label = { Text("Phone") }, singleLine = true,
-                    leadingIcon = { Icon(Icons.Default.Phone, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp)) },
+                    label = { Text(stringResource(R.string.label_phone)) }, singleLine = true,
+                    leadingIcon = { Icon(Icons.Default.Phone, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + dimensionResource(R.dimen.padding_tiny))) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
                 )
@@ -150,7 +146,7 @@ fun ProfileScreen(navController: NavController) {
                     },
                     modifier = Modifier.fillMaxWidth().height(dimensionResource(R.dimen.button_height)),
                     shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
-                ) { Text("Save Changes") }
+                ) { Text(stringResource(R.string.save_changes)) }
             }
         }
     }
@@ -160,8 +156,8 @@ fun ProfileScreen(navController: NavController) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
             icon  = { Icon(Icons.AutoMirrored.Filled.ExitToApp, null, tint = MaterialTheme.colorScheme.error) },
-            title = { Text("Log Out?") },
-            text  = { Text("You will be signed out of your Vibe account.") },
+            title = { Text(stringResource(R.string.logout_confirm_title)) },
+            text  = { Text(stringResource(R.string.logout_confirm_msg)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -170,9 +166,9 @@ fun ProfileScreen(navController: NavController) {
                         navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text("Log Out") }
+                ) { Text(stringResource(R.string.logout_button)) }
             },
-            dismissButton = { OutlinedButton(onClick = { showLogoutDialog = false }) { Text("Cancel") } }
+            dismissButton = { OutlinedButton(onClick = { showLogoutDialog = false }) { Text(stringResource(R.string.cancel_button)) } }
         )
     }
 
@@ -183,11 +179,11 @@ fun ProfileScreen(navController: NavController) {
                 actions = {
                     if (currentUser?.isAdmin == true) {
                         IconButton(onClick = { navController.navigate(Screen.AdminHome.route) }) {
-                            Icon(Icons.Default.AdminPanelSettings, "Admin", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Default.AdminPanelSettings, null, tint = MaterialTheme.colorScheme.primary)
                         }
                     }
                     IconButton(onClick = { navController.navigate(Screen.Settings.route) }) {
-                        Icon(Icons.Default.Settings, "Settings")
+                        Icon(Icons.Default.Settings, null)
                     }
                 }
             )
@@ -234,12 +230,12 @@ fun ProfileScreen(navController: NavController) {
                             Spacer(Modifier.height(dimensionResource(R.dimen.padding_small)))
                             Surface(shape = RoundedCornerShape(dimensionResource(R.dimen.badge_corner_radius)), color = MaterialTheme.colorScheme.secondaryContainer) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                    modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_10dp), vertical = dimensionResource(R.dimen.padding_extra_small)),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_extra_small))
                                 ) {
-                                    Icon(Icons.Default.AdminPanelSettings, null, Modifier.size(12.dp), tint = MaterialTheme.colorScheme.secondary)
-                                    Text("Event Organiser", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold)
+                                    Icon(Icons.Default.AdminPanelSettings, null, Modifier.size(dimensionResource(R.dimen.icon_size_tiny)), tint = MaterialTheme.colorScheme.secondary)
+                                    Text(stringResource(R.string.role_organizer), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -250,7 +246,7 @@ fun ProfileScreen(navController: NavController) {
                         ) {
                             Icon(Icons.Default.Edit, null, Modifier.size(dimensionResource(R.dimen.icon_size_small)))
                             Spacer(Modifier.width(dimensionResource(R.dimen.padding_small)))
-                            Text("Edit Profile")
+                            Text(stringResource(R.string.edit_profile))
                         }
                     }
                 }
@@ -261,11 +257,11 @@ fun ProfileScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth().padding(horizontal = dimensionResource(R.dimen.padding_medium)),
                     horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
                 ) {
-                    ProfileStatCard("Upcoming", "$upcomingCount",  Icons.Default.CalendarToday, Modifier.weight(1f))
-                    ProfileStatCard("Attended",  "$attendedCount", Icons.Default.CheckCircle,    Modifier.weight(1f))
+                    ProfileStatCard(stringResource(R.string.stat_upcoming), "$upcomingCount",  Icons.Default.CalendarToday, Modifier.weight(1f))
+                    ProfileStatCard(stringResource(R.string.stat_attended),  "$attendedCount", Icons.Default.CheckCircle,    Modifier.weight(1f))
                     ProfileStatCard(
-                        "Spent",
-                        "${stringResource(R.string.ugx_currency)} ${String.format(Locale.getDefault(), "%,d", totalSpent)}",
+                        stringResource(R.string.stat_spent),
+                        stringResource(R.string.ugx_prefix, String.format(Locale.getDefault(), "%,d", totalSpent)),
                         Icons.Default.AccountBalanceWallet, Modifier.weight(1f)
                     )
                 }
@@ -278,7 +274,7 @@ fun ProfileScreen(navController: NavController) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("My Bookings", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.my_bookings), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     
                     val countStr = if (filteredBookings.size == 1) 
                         stringResource(R.string.event_count_singular, filteredBookings.size)
@@ -296,12 +292,12 @@ fun ProfileScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth().padding(horizontal = dimensionResource(R.dimen.padding_medium)),
                     horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
                 ) {
-                    FilterChip(selected = activeFilter == null, onClick = { activeFilter = null }, label = { Text("All") })
+                    FilterChip(selected = activeFilter == null, onClick = { activeFilter = null }, label = { Text(stringResource(R.string.cat_all)) })
                     BookingStatus.entries.forEach { status ->
                         FilterChip(
                             selected = activeFilter == status,
                             onClick  = { activeFilter = if (activeFilter == status) null else status },
-                            label    = { Text(status.label) }
+                            label    = { Text(stringResource(status.labelRes)) }
                         )
                     }
                 }
@@ -316,7 +312,7 @@ fun ProfileScreen(navController: NavController) {
                         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
                     ) {
                         Icon(Icons.Default.ConfirmationNumber, null, Modifier.size(dimensionResource(R.dimen.icon_size_extra_large)), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("No bookings found", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.no_bookings_found), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -344,7 +340,7 @@ fun ProfileScreen(navController: NavController) {
                     shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius)),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ExitToApp, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp))
+                    Icon(Icons.AutoMirrored.Filled.ExitToApp, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + dimensionResource(R.dimen.padding_tiny)))
                     Spacer(Modifier.width(dimensionResource(R.dimen.padding_small)))
                     Text(stringResource(R.string.logout_button), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 }
@@ -366,7 +362,7 @@ private fun ProfileStatCard(label: String, value: String, icon: ImageVector, mod
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_extra_small))
         ) {
-            Icon(icon, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + 2.dp), tint = MaterialTheme.colorScheme.primary)
+            Icon(icon, null, Modifier.size(dimensionResource(R.dimen.icon_size_small) + dimensionResource(R.dimen.padding_tiny)), tint = MaterialTheme.colorScheme.primary)
             Text(value, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -399,22 +395,22 @@ fun BookingHistoryItem(
                 Text(booking.eventName, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
                 Text(booking.date, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (booking.amountPaid > 0) {
-                    Text("${stringResource(R.string.ugx_currency)} ${String.format(Locale.getDefault(), "%,d", booking.amountPaid)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.ugx_prefix, String.format(Locale.getDefault(), "%,d", booking.amountPaid)), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_extra_small))) {
                 Surface(shape = RoundedCornerShape(dimensionResource(R.dimen.badge_corner_radius)), color = badgeContainer) {
-                    Text(booking.tier, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                    Text(booking.tier, modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_small), vertical = dimensionResource(R.dimen.padding_tiny) + 1.dp),
                         style = MaterialTheme.typography.labelSmall, color = badgeContent, fontWeight = FontWeight.SemiBold)
                 }
                 
                 if (booking.status == BookingStatus.UPCOMING) {
                     TextButton(onClick = { onCancel() }, contentPadding = PaddingValues(0.dp)) {
-                        Text("Cancel", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
+                        Text(stringResource(R.string.cancel_button), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall)
                     }
                 } else {
                     Surface(shape = RoundedCornerShape(dimensionResource(R.dimen.badge_corner_radius)), color = MaterialTheme.colorScheme.surface) {
-                        Text(booking.status.label, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                        Text(stringResource(booking.status.labelRes), modifier = Modifier.padding(horizontal = dimensionResource(R.dimen.padding_small), vertical = dimensionResource(R.dimen.padding_tiny) + 1.dp),
                             style = MaterialTheme.typography.labelSmall, color = badgeContent)
                     }
                 }

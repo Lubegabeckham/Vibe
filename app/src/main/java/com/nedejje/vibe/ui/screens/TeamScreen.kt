@@ -10,30 +10,39 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import com.nedejje.vibe.R
 
-data class TeamMember(val name: String, val role: String, val id: String)
+/**
+ * TeamMember data class represents a student in the capstone project.
+ * Uses camelCase as per Ndejje University coding standards.
+ */
+data class TeamMember(val name: String, val role: String, val registrationNumber: String)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeamScreen(navController: NavController) {
+    // Roles mapped to Ndejje University Capstone Project requirements
     val team = listOf(
-        TeamMember("LUBEGA BECKHAM JUSPER", "Project Manager", "24/2/306/D/184"),
-        TeamMember("KWAGALA DEBORAH", "System Analyst", "24/2/314/D/716"),
-        TeamMember("WASSWA CALVIN", "Backend Developer", "24/2/306/W/180"),
-        TeamMember("NYOMBI ABUBAKER", "Frontend Developer", "24/2/314/D/002"),
-        TeamMember("TAYEBWA RONALD", "UI/UX Designer & Tester", "25/2/314/D/3263")
+        TeamMember("LUBEGA BECKHAM JUSPER", "Lead Developer", "24/2/306/D/184"),
+        TeamMember("NYOMBI ABUBAKER", "UI/UX Specialist", "24/2/314/D/002"),
+        TeamMember("WASSWA CALVIN", "Software Developer", "24/2/306/W/180"),
+        TeamMember("TAYEBWA RONALD", "Testing and QA Engineer", "25/2/314/D/3263"),
+        TeamMember("KWAGALA DEBORAH", "Documentation and Research Lead", "24/2/314/D/716")
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Project Team", style = MaterialTheme.typography.titleLarge) },
+                title = { Text(stringResource(R.string.team_title), style = MaterialTheme.typography.titleLarge) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack, 
+                            contentDescription = stringResource(R.string.back)
+                        )
                     }
                 }
             )
@@ -47,7 +56,7 @@ fun TeamScreen(navController: NavController) {
         ) {
             item {
                 Text(
-                    text = "Vibe Development Team",
+                    text = stringResource(R.string.vibe_dev_team),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -74,7 +83,7 @@ fun TeamScreen(navController: NavController) {
                             color = MaterialTheme.colorScheme.secondary
                         )
                         Text(
-                            text = "Reg No: ${member.id}", 
+                            text = stringResource(R.string.reg_no_prefix, member.registrationNumber),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )

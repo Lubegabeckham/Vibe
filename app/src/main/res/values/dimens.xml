@@ -48,4 +48,8 @@
     <dimen name="blob_offset_x_negative">-60dp</dimen>
     <dimen name="blob_offset_y_negative">-80dp</dimen>
     <dimen name="blur_radius_large">100dp</dimen>
+
+    <!-- Generic Spacers/Offsets -->
+    <dimen name="padding_10dp">10dp</dimen>
+    <dimen name="padding_6dp">6dp</dimen>
 </resources>
