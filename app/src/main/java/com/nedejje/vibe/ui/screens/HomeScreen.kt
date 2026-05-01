@@ -69,10 +69,17 @@ fun HomeScreen(
         "Favorites" -> events.filter { it.id in favorites }
         "Free"      -> events.filter { it.isFree }
         "Music"     -> events.filter {
-            it.title.contains("Jazz", true) || it.title.contains("Music", true) || it.title.contains("Concert", true)
+            it.category.equals("Music", true) ||
+                    it.title.contains("Jazz", true) || it.title.contains("Music", true) ||
+                    it.title.contains("Concert", true) || it.title.contains("Reggae", true) ||
+                    it.title.contains("Gospel", true) || it.title.contains("Hip Hop", true) ||
+                    it.title.contains("Piano", true)
         }
         "Tech"      -> events.filter {
-            it.title.contains("Tech", true) || it.title.contains("Startup", true) || it.title.contains("Innovation", true)
+            it.category.equals("Tech", true) ||
+                    it.title.contains("Tech", true) || it.title.contains("Startup", true) ||
+                    it.title.contains("Innovation", true) || it.title.contains("AI", true) ||
+                    it.title.contains("Blockchain", true) || it.title.contains("Fintech", true)
         }
         else        -> events
     }

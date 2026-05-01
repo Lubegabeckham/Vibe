@@ -48,7 +48,7 @@ class AuthViewModel(private val userRepo: UserRepository) : ViewModel() {
         }
     }
 
-    fun signup(name: String, email: String, phone: String, password: String, isAdmin: Boolean = false) {
+    fun signup(name: String, email: String, phone: String, password: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             val newUser = UserEntity(
@@ -56,7 +56,7 @@ class AuthViewModel(private val userRepo: UserRepository) : ViewModel() {
                 name         = name.trim(),
                 email        = email.trim(),
                 phone        = phone.trim(),
-                isAdmin      = isAdmin,
+                isAdmin      = false,
                 passwordHash = hashPassword(password)
             )
             userRepo.insert(newUser)
@@ -312,45 +312,49 @@ class GuestManagerViewModel(private val repo: GuestRepository) : ViewModel() {
     }
 }
 
-// ── ContributionViewModel ──────────────────────────────────────────────────────
-class ContributionViewModel(private val repo: ContributionRepository) : ViewModel() {
-    private val _eventId = MutableStateFlow("")
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val contributions: StateFlow<List<ContributionEntity>> = _eventId
-        .flatMapLatest { id -> if (id.isBlank()) flowOf(emptyList()) else repo.observeByEvent(id) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
-
-    fun setEventId(id: String) { _eventId.value = id }
-    fun addContribution(eventId: String, itemName: String, category: String) {
-        viewModelScope.launch { repo.add(ContributionEntity(UUID.randomUUID().toString(), eventId, itemName, category)) }
-    }
-    fun claimItem(id: String, name: String)  { viewModelScope.launch { repo.updateClaim(id, name) } }
-    fun unclaimItem(id: String)              { viewModelScope.launch { repo.updateClaim(id, null) } }
-    fun deleteContribution(c: ContributionEntity) { viewModelScope.launch { repo.delete(c) } }
-
-    class Factory(private val repo: ContributionRepository) : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T = ContributionViewModel(repo) as T
-    }
-}
-
 // ── BudgetViewModel ────────────────────────────────────────────────────────────
 class BudgetViewModel(private val repo: BudgetRepository) : ViewModel() {
     private val _eventId = MutableStateFlow("")
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val items: StateFlow<List<BudgetItemEntity>> = _eventId
         .flatMapLatest { id -> if (id.isBlank()) flowOf(emptyList()) else repo.observeByEvent(id) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val totalSpend: StateFlow<Double> = _eventId
         .flatMapLatest { id -> if (id.isBlank()) flowOf(0.0) else repo.observeTotalByEvent(id) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), 0.0)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val paidTotal: StateFlow<Double> = _eventId
+        .flatMapLatest { id -> if (id.isBlank()) flowOf(0.0) else repo.observePaidTotalByEvent(id) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), 0.0)
+
     fun setEventId(id: String) { _eventId.value = id }
-    fun addItem(eventId: String, name: String, amount: Double) {
-        viewModelScope.launch { repo.add(BudgetItemEntity(UUID.randomUUID().toString(), eventId, name.trim(), amount)) }
+
+    fun addItem(eventId: String, name: String, amount: Double, category: String, notes: String) {
+        viewModelScope.launch {
+            repo.add(BudgetItemEntity(
+                id = UUID.randomUUID().toString(),
+                eventId = eventId,
+                name = name.trim(),
+                amount = amount,
+                category = category,
+                notes = notes.trim()
+            ))
+        }
     }
+
+    fun updateItem(item: BudgetItemEntity) {
+        viewModelScope.launch { repo.update(item) }
+    }
+
     fun deleteItem(item: BudgetItemEntity) { viewModelScope.launch { repo.delete(item) } }
+
+    fun togglePaid(item: BudgetItemEntity) {
+        viewModelScope.launch { repo.togglePaid(item.id, !item.isPaid) }
+    }
 
     class Factory(private val repo: BudgetRepository) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")

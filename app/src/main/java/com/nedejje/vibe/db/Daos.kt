@@ -119,27 +119,12 @@ interface TicketDao {
 }
 
 @Dao
-interface ContributionDao {
-    @Query("SELECT * FROM contributions WHERE eventId = :eventId")
-    fun observeByEvent(eventId: String): Flow<List<ContributionEntity>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(contribution: ContributionEntity)
-
-    @Update
-    suspend fun update(contribution: ContributionEntity)
-
-    @Delete
-    suspend fun delete(contribution: ContributionEntity)
-
-    @Query("UPDATE contributions SET personClaimed = :personClaimed WHERE id = :id")
-    suspend fun updateClaim(id: String, personClaimed: String?)
-}
-
-@Dao
 interface BudgetDao {
-    @Query("SELECT * FROM budget_items WHERE eventId = :eventId")
+    @Query("SELECT * FROM budget_items WHERE eventId = :eventId ORDER BY createdAt DESC")
     fun observeByEvent(eventId: String): Flow<List<BudgetItemEntity>>
+
+    @Query("SELECT * FROM budget_items WHERE eventId = :eventId AND category = :category ORDER BY createdAt DESC")
+    fun observeByCategory(eventId: String, category: String): Flow<List<BudgetItemEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: BudgetItemEntity)
@@ -152,6 +137,12 @@ interface BudgetDao {
 
     @Query("SELECT SUM(amount) FROM budget_items WHERE eventId = :eventId")
     fun observeTotalByEvent(eventId: String): Flow<Double?>
+
+    @Query("SELECT SUM(amount) FROM budget_items WHERE eventId = :eventId AND isPaid = 1")
+    fun observePaidTotalByEvent(eventId: String): Flow<Double?>
+
+    @Query("UPDATE budget_items SET isPaid = :isPaid WHERE id = :id")
+    suspend fun updatePaidStatus(id: String, isPaid: Boolean)
 }
 
 @Dao

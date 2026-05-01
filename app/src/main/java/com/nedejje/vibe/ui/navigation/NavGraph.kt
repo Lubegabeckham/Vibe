@@ -33,7 +33,7 @@ fun NavGraph(
         composable(Screen.AdminHome.route) {
             AdminHomeScreen(navController, onThemeToggle, isDarkMode)
         }
-        
+
         composable(Screen.QrScanner.route) {
             QrScannerScreen(navController)
         }
@@ -46,7 +46,7 @@ fun NavGraph(
             val eventId = backStackEntry.arguments?.getString("eventId")
             EventEditorScreen(navController, eventId)
         }
-        
+
         // Event Detail (User)
         composable(
             route = Screen.EventDetail.route,
@@ -75,14 +75,6 @@ fun NavGraph(
         }
 
         // Event Tools (Admin/Organiser)
-        composable(
-            route = Screen.Contribution.route,
-            arguments = listOf(navArgument("eventId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val eventId = backStackEntry.arguments?.getString("eventId")
-            ContributionScreen(navController, eventId)
-        }
-
         composable(
             route = Screen.GuestManager.route,
             arguments = listOf(navArgument("eventId") { type = NavType.StringType })

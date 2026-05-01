@@ -31,9 +31,6 @@ sealed class Screen(val route: String) {
     }
 
     // ── Event Tools (parameterised) ──────────────────────────────────────
-    object Contribution : Screen("contribution/{eventId}") {
-        fun createRoute(eventId: String) = "contribution/$eventId"
-    }
     object GuestManager : Screen("guest_manager/{eventId}") {
         fun createRoute(eventId: String) = "guest_manager/$eventId"
     }

@@ -93,22 +93,16 @@ class TicketRepository(private val dao: TicketDao) {
     fun tierBreakdownByEvent(eventId: String) = dao.tierBreakdownByEvent(eventId)
 }
 
-// ── ContributionRepository ────────────────────────────────────────────────────
-class ContributionRepository(private val dao: ContributionDao) {
-    fun observeByEvent(eventId: String): Flow<List<ContributionEntity>> = dao.observeByEvent(eventId)
-    suspend fun add(contribution: ContributionEntity) = dao.insert(contribution)
-    suspend fun update(contribution: ContributionEntity) = dao.update(contribution)
-    suspend fun delete(contribution: ContributionEntity) = dao.delete(contribution)
-    suspend fun updateClaim(id: String, personName: String?) = dao.updateClaim(id, personName)
-}
-
 // ── BudgetRepository ──────────────────────────────────────────────────────────
 class BudgetRepository(private val dao: BudgetDao) {
     fun observeByEvent(eventId: String): Flow<List<BudgetItemEntity>> = dao.observeByEvent(eventId)
+    fun observeByCategory(eventId: String, category: String): Flow<List<BudgetItemEntity>> = dao.observeByCategory(eventId, category)
     fun observeTotalByEvent(eventId: String): Flow<Double> = dao.observeTotalByEvent(eventId).map { it ?: 0.0 }
+    fun observePaidTotalByEvent(eventId: String): Flow<Double> = dao.observePaidTotalByEvent(eventId).map { it ?: 0.0 }
     suspend fun add(item: BudgetItemEntity) = dao.insert(item)
     suspend fun update(item: BudgetItemEntity) = dao.update(item)
     suspend fun delete(item: BudgetItemEntity) = dao.delete(item)
+    suspend fun togglePaid(id: String, isPaid: Boolean) = dao.updatePaidStatus(id, isPaid)
 }
 
 // ── FavoriteRepository ───────────────────────────────────────────────────────

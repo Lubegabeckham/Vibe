@@ -29,7 +29,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.nedejje.vibe.R
@@ -64,14 +63,12 @@ fun SignupScreen(navController: NavController) {
     var phone           by remember { mutableStateOf("") }
     var password        by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var selectedRole    by remember { mutableStateOf("Guest") } // "Guest" | "Host"
-    var roleExpanded    by remember { mutableStateOf(false) }
 
     LaunchedEffect(authState) {
         if (authState is AuthState.Success) {
-            val user = (authState as AuthState.Success).user
-            val dest = if (user.isAdmin) Screen.AdminHome.route else Screen.Home.route
-            navController.navigate(dest) { popUpTo(Screen.Signup.route) { inclusive = true } }
+            navController.navigate(Screen.Home.route) { 
+                popUpTo(Screen.Signup.route) { inclusive = true } 
+            }
         }
     }
 
@@ -92,7 +89,7 @@ fun SignupScreen(navController: NavController) {
                     radius = 1100f
                 )
             ),
-        contentAlignment = Alignment.Center // Part B: Centered Layout
+        contentAlignment = Alignment.Center
     ) {
         // Decorative blobs
         Box(
@@ -112,14 +109,14 @@ fun SignupScreen(navController: NavController) {
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = dimensionResource(R.dimen.padding_large), vertical = dimensionResource(R.dimen.spacer_large)),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center // Part B: Centered Layout
+            verticalArrangement = Arrangement.Center
         ) {
             // Back button
             Box(modifier = Modifier.fillMaxWidth()) {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack, 
-                        contentDescription = stringResource(R.string.back), 
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back),
                         tint = NeonLilac
                     )
                 }
@@ -129,13 +126,13 @@ fun SignupScreen(navController: NavController) {
 
             // Header
             Text(
-                text = stringResource(R.string.vibe_logo_text), 
-                style = MaterialTheme.typography.displayMedium, // Part A: Typography
+                text = stringResource(R.string.vibe_logo_text),
+                style = MaterialTheme.typography.displayMedium,
                 color = NeonLilac
             )
             Spacer(Modifier.height(dimensionResource(R.dimen.padding_extra_small)))
             Text(
-                text = stringResource(R.string.signup_title), 
+                text = stringResource(R.string.signup_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = SoftCream.copy(alpha = 0.7f)
             )
@@ -155,7 +152,7 @@ fun SignupScreen(navController: NavController) {
                     label = { Text(stringResource(R.string.full_name_label)) },
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = { Icon(Icons.Default.Person, null, tint = MutedLavender) },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next, capitalization = KeyboardCapitalization.Words),
                     keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                     singleLine = true,
                     colors = signupFieldColors(),
@@ -175,41 +172,18 @@ fun SignupScreen(navController: NavController) {
                     shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
                 )
 
-                // Role selector
-                ExposedDropdownMenuBox(expanded = roleExpanded, onExpandedChange = { roleExpanded = it }) {
-                    OutlinedTextField(
-                        value = if (selectedRole == "Host") "Event Organiser / Host" else "Guest / Attendee",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("I am a...") },
-                        modifier = Modifier.fillMaxWidth().menuAnchor(),
-                        leadingIcon = {
-                            Icon(
-                                if (selectedRole == "Host") Icons.Default.AdminPanelSettings else Icons.Default.People,
-                                null, tint = if (selectedRole == "Host") GoldAccent else MutedLavender
-                            )
-                        },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = roleExpanded) },
-                        colors = signupFieldColors(),
-                        shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
-                    )
-                    ExposedDropdownMenu(
-                        expanded = roleExpanded,
-                        onDismissRequest = { roleExpanded = false },
-                        modifier = Modifier.background(CardSurface)
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Event Organiser / Host", color = SoftCream) },
-                            leadingIcon = { Icon(Icons.Default.AdminPanelSettings, null, tint = GoldAccent) },
-                            onClick = { selectedRole = "Host"; roleExpanded = false }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Guest / Attendee", color = SoftCream) },
-                            leadingIcon = { Icon(Icons.Default.People, null, tint = MutedLavender) },
-                            onClick = { selectedRole = "Guest"; roleExpanded = false }
-                        )
-                    }
-                }
+                // Phone
+                OutlinedTextField(
+                    value = phone, onValueChange = { phone = it },
+                    label = { Text("Phone Number") },
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = { Icon(Icons.Default.Phone, null, tint = MutedLavender) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                    singleLine = true,
+                    colors = signupFieldColors(),
+                    shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius))
+                )
 
                 // Password
                 OutlinedTextField(
@@ -249,11 +223,10 @@ fun SignupScreen(navController: NavController) {
                             name     = name,
                             email    = email,
                             phone    = phone,
-                            password = password,
-                            isAdmin  = selectedRole == "Host"
+                            password = password
                         )
                     },
-                    enabled = name.isNotBlank() && email.isNotBlank() && password.isNotBlank() && authState !is AuthState.Loading,
+                    enabled = name.isNotBlank() && email.isNotBlank() && phone.isNotBlank() && password.isNotBlank() && authState !is AuthState.Loading,
                     modifier = Modifier.fillMaxWidth().height(dimensionResource(R.dimen.button_height)),
                     shape = RoundedCornerShape(dimensionResource(R.dimen.button_corner_radius)),
                     colors = ButtonDefaults.buttonColors(containerColor = ElectricPlum, disabledContainerColor = ElectricPlum.copy(alpha = 0.4f))

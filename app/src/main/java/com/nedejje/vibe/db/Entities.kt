@@ -80,22 +80,6 @@ data class TicketEntity(
     val paymentId: String? = null
 )
 
-// ── Contribution (Potluck) ─────────────────────────────────────────────────────
-@Entity(
-    tableName = "contributions",
-    foreignKeys = [
-        ForeignKey(entity = EventEntity::class, parentColumns = ["id"], childColumns = ["eventId"], onDelete = ForeignKey.CASCADE)
-    ],
-    indices = [Index("eventId")]
-)
-data class ContributionEntity(
-    @PrimaryKey val id: String,
-    val eventId: String,
-    val itemName: String,
-    val category: String,
-    val personClaimed: String? = null
-)
-
 // ── Budget Item ────────────────────────────────────────────────────────────────
 @Entity(
     tableName = "budget_items",
@@ -108,7 +92,11 @@ data class BudgetItemEntity(
     @PrimaryKey val id: String,
     val eventId: String,
     val name: String,
-    val amount: Double
+    val amount: Double,
+    val category: String = "Other",   // "Venue" | "Catering" | "Marketing" | "Staff" | "Equipment" | "Other"
+    val notes: String = "",
+    val isPaid: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
 )
 
 // ── Favorite ──────────────────────────────────────────────────────────────────

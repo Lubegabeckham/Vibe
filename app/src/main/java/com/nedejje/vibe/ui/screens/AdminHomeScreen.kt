@@ -174,7 +174,7 @@ fun AdminHomeScreen(
                         Text(
                             text = currentUser?.name?.split(" ")?.firstOrNull() ?: "Admin",
                             style = MaterialTheme.typography.headlineSmall, // Part A: Typography
-                            color = Color.White, 
+                            color = Color.White,
                             fontWeight = FontWeight.Black
                         )
                         Spacer(Modifier.height(dimensionResource(R.dimen.padding_extra_small)))
@@ -196,8 +196,8 @@ fun AdminHomeScreen(
             // Organiser tools header
             item {
                 Text(
-                    text = stringResource(R.string.organizer_tools_header), 
-                    style = MaterialTheme.typography.titleMedium, 
+                    text = stringResource(R.string.organizer_tools_header),
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -211,7 +211,7 @@ fun AdminHomeScreen(
                 ) {
                     AdminToolIcon("Guests",  Icons.Default.Groups)                  { navController.navigate(Screen.GuestManager.createRoute(firstEventId)) }
                     AdminToolIcon("Budget",  Icons.Default.AccountBalanceWallet)    { navController.navigate(Screen.BudgetTracker.createRoute(firstEventId)) }
-                    AdminToolIcon("Potluck", Icons.Default.Restaurant)              { navController.navigate(Screen.Contribution.createRoute(firstEventId)) }
+                    AdminToolIcon("Report",  Icons.Default.Assessment)              { navController.navigate(Screen.WrapReport.createRoute(firstEventId)) }
                     AdminToolIcon("Scanner", Icons.Default.QrCodeScanner)            { navController.navigate(Screen.QrScanner.route) }
                 }
             }
@@ -224,18 +224,18 @@ fun AdminHomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = stringResource(R.string.manage_events_header), 
-                        style = MaterialTheme.typography.titleMedium, 
+                        text = stringResource(R.string.manage_events_header),
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    val countStr = if (events.size == 1) 
+                    val countStr = if (events.size == 1)
                         stringResource(R.string.event_count_singular, events.size)
-                    else 
+                    else
                         stringResource(R.string.events_count, events.size)
-                    
+
                     Text(
                         text = countStr,
-                        style = MaterialTheme.typography.bodySmall, 
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -268,8 +268,8 @@ fun AdminHomeScreen(
                     onEdit         = { navController.navigate(Screen.EventEditor.createRoute(event.id)) },
                     onDeleteRequest = { eventPendingDelete = event },
                     onManage       = { navController.navigate(Screen.GuestManager.createRoute(event.id)) },
-                    onToggleCancel = { 
-                        scope.launch { 
+                    onToggleCancel = {
+                        scope.launch {
                             app.container.eventRepository.cancelEvent(event.id, !event.isCancelled)
                         }
                     }
@@ -405,7 +405,7 @@ fun AdminEventCard(
             Spacer(Modifier.height(dimensionResource(R.dimen.padding_medium)))
             Row(horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))) {
                 FilledTonalButton(
-                    onClick = onManage, 
+                    onClick = onManage,
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(dimensionResource(R.dimen.padding_small))
                 ) {
@@ -417,7 +417,7 @@ fun AdminEventCard(
                     onClick = onToggleCancel,
                     shape = RoundedCornerShape(dimensionResource(R.dimen.padding_small))
                 ) {
-                    Icon(if (event.isCancelled) Icons.Default.EventAvailable else Icons.Default.EventBusy, 
+                    Icon(if (event.isCancelled) Icons.Default.EventAvailable else Icons.Default.EventBusy,
                         contentDescription = "Toggle Cancel", Modifier.size(dimensionResource(R.dimen.icon_size_small)),
                         tint = if (event.isCancelled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
                 }
