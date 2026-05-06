@@ -34,6 +34,6 @@ The following core functions have been verified through automated unit tests:
 - **Rule 4 (MainActivity)**: Strictly serves as an entry point with logic delegated to `MainViewModel`.
 
 ---
-© 2025 Ndejje University - Faculty of Science and Computing
+© 2026 Ndejje University - Faculty of Science and Computing
 
 https://youtu.be/S57garGLuXs?si=OOe4CMbrb_cOfGQj
