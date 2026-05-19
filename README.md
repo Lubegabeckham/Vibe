@@ -37,3 +37,6 @@ The following core functions have been verified through automated unit tests:
 © 2026 Ndejje University - Faculty of Science and Computing
 
 https://youtu.be/S57garGLuXs?si=OOe4CMbrb_cOfGQj
+
+The first Video we uploaded was removed by YouTube due to age restriction so we uploaded it again and this is the link to the Video 
+https://youtube.com/@group10ndejjeuniversity?si=JhZh-MsQ40dN0lUO
